@@ -10,3 +10,4 @@ O projeto encontra-se na fase de planeamento. A implementação em Django ainda 
 
 - [Tópico 01 - Âmbito e objetivos](docs/planeamento/01-ambito-e-objetivos.md)
 - [Tópico 02 - Perfis e permissões](docs/planeamento/02-perfis-e-permissoes.md)
+- [Tópico 03 - Regras de negócio](docs/planeamento/03-regras-de-negocio.md)
