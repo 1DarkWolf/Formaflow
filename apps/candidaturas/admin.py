@@ -111,5 +111,6 @@ class VerificacaoElegibilidadeAdmin(admin.ModelAdmin):
         "beneficiario",
         "participacao",
         "verificada_por",
+        "evidencia",
     )
     readonly_fields = ("criado_em", "atualizado_em")

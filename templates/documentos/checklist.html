@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Documentos — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Percurso">
+    <a href="{% url 'candidaturas:lista' %}">Candidaturas</a>
+    <span aria-hidden="true">/</span>
+    <a href="{% url 'candidaturas:detalhe' candidatura.public_id %}">Resumo</a>
+    <span aria-hidden="true">/</span>
+    <span>Documentos</span>
+  </nav>
+
+  <header class="detail-header application-header">
+    <div>
+      <p class="eyebrow">Passo 6 de 8</p>
+      <h1 class="page-title">Checklist documental</h1>
+      <p class="hero-copy">{{ candidatura }} · {{ validos }} de {{ total }} requisito{{ total|pluralize }} resolvido{{ total|pluralize }}</p>
+    </div>
+    {% if pode_editar %}
+      <form method="post" action="{% url 'documentos:gerar_checklist' candidatura.public_id %}">
+        {% csrf_token %}
+        <button class="button button-secondary" type="submit">Gerar ou atualizar checklist</button>
+      </form>
+    {% endif %}
+  </header>
+
+  <div class="document-list">
+    {% for requisito in requisitos %}
+      <article class="document-card state-{{ requisito.estado|lower }}">
+        <div class="document-card-heading">
+          <div>
+            <div class="document-status-row">
+              <span class="status-label">{{ requisito.get_estado_display }}</span>
+              {% if requisito.bloqueante %}<span class="blocking-label">Bloqueante</span>{% endif %}
+            </div>
+            <h2>{{ requisito.tipo_documento.designacao }}</h2>
+            <p>
+              {{ requisito.get_fase_display }}
+              {% if requisito.beneficiario %} · {{ requisito.beneficiario.candidato.utilizador.get_full_name }}{% endif %}
+              {% if requisito.participacao %} · {{ requisito.participacao.acao_formacao.designacao }}{% endif %}
+            </p>
+            {% if requisito.codigo_regra %}<span class="rule-code">{{ requisito.codigo_regra }}</span>{% endif %}
+          </div>
+        </div>
+
+        {% for documento in requisito.documentos.all %}
+          {% for versao in documento.versoes.all %}
+            {% if versao.corrente %}
+              <div class="current-version">
+                <div>
+                  <strong>Versão {{ versao.numero }} · {{ versao.get_estado_validacao_display }}</strong>
+                  <span>{{ versao.ficheiro.nome_original }} · {{ versao.ficheiro.tamanho_bytes|filesizeformat }}</span>
+                  {% if versao.observacao_validacao %}<p>{{ versao.observacao_validacao }}</p>{% endif %}
+                </div>
+                <div class="card-actions">
+                  <a class="button button-secondary" href="{% url 'documentos:descarregar' documento.public_id versao.numero %}">Descarregar</a>
+                  <a class="button button-secondary" href="{% url 'documentos:historico' documento.public_id %}">Histórico</a>
+                </div>
+              </div>
+              {% if pode_validar %}
+                <details class="editor-panel compact-editor">
+                  <summary>Validar esta versão</summary>
+                  <form method="post" action="{% url 'documentos:validar' versao.pk %}">
+                    {% csrf_token %}
+                    <div class="form-field">
+                      <label for="resultado-{{ versao.pk }}">Decisão</label>
+                      <select id="resultado-{{ versao.pk }}" name="resultado">
+                        <option value="VALIDO">Válido</option>
+                        <option value="INVALIDO">Inválido</option>
+                      </select>
+                    </div>
+                    <div class="form-field">
+                      <label for="observacao-{{ versao.pk }}">Observação</label>
+                      <textarea id="observacao-{{ versao.pk }}" name="observacao" rows="3"></textarea>
+                    </div>
+                    <button class="button button-primary" type="submit">Guardar validação</button>
+                  </form>
+                </details>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% empty %}
+          {% if requisito.pode_carregar %}
+            <details class="editor-panel compact-editor">
+              <summary>Carregar documento</summary>
+              <form method="post" enctype="multipart/form-data" action="{% url 'documentos:carregar' requisito.pk %}">
+                {% csrf_token %}
+                <div class="form-field">
+                  <label for="ficheiro-{{ requisito.pk }}">Ficheiro PDF</label>
+                  <input id="ficheiro-{{ requisito.pk }}" name="ficheiro" type="file" accept="application/pdf,.pdf" required>
+                  <span class="field-help">O limite é validado pelas regras associadas à candidatura.</span>
+                </div>
+                <div class="form-field">
+                  <label for="titulo-{{ requisito.pk }}">Título opcional</label>
+                  <input id="titulo-{{ requisito.pk }}" name="titulo" type="text" maxlength="255">
+                </div>
+                <button class="button button-primary" type="submit">Carregar para a área privada</button>
+              </form>
+            </details>
+          {% endif %}
+        {% endfor %}
+
+        {% if pode_validar and requisito.estado != "DISPENSADO" %}
+          <details class="editor-panel compact-editor">
+            <summary>Dispensar com justificação</summary>
+            <form method="post" action="{% url 'documentos:dispensar' requisito.pk %}">
+              {% csrf_token %}
+              <div class="form-field">
+                <label for="motivo-dispensa-{{ requisito.pk }}">Justificação</label>
+                <textarea id="motivo-dispensa-{{ requisito.pk }}" name="motivo" rows="3" required></textarea>
+              </div>
+              <button class="button button-secondary" type="submit">Registar dispensa</button>
+            </form>
+          </details>
+        {% endif %}
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        <h2>A checklist ainda não foi gerada</h2>
+        <p>Atualize a checklist depois de preencher os beneficiários e a formação.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if pode_editar and total %}
+    <section class="snapshot-panel" aria-labelledby="snapshot-title">
+      <div>
+        <p class="eyebrow">Fotografia imutável</p>
+        <h2 id="snapshot-title">Preservar a preparação</h2>
+        <p>Só é criada quando todos os requisitos bloqueantes estiverem válidos ou dispensados.</p>
+      </div>
+      <form method="post" action="{% url 'documentos:snapshot' candidatura.public_id %}">
+        {% csrf_token %}
+        <label for="finalidade">Finalidade</label>
+        <select id="finalidade" name="finalidade">
+          <option value="SUBMISSAO">Submissão</option>
+          <option value="CORRECAO">Correção</option>
+        </select>
+        <button class="button button-primary" type="submit">Criar fotografia</button>
+      </form>
+    </section>
+  {% endif %}
+{% endblock %}

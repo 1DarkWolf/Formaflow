@@ -146,6 +146,12 @@ PARAMETROS = (
 
 TIPOS_DOCUMENTO = (
     (
+        "DOCUMENTO_EMPRESA",
+        "Documento constitutivo da entidade empregadora",
+        TipoDocumento.Categoria.EMPRESA,
+        TipoDocumento.Sensibilidade.INTERNO,
+    ),
+    (
         "IDENTIFICACAO_CIVIL",
         "Documento de identificação",
         TipoDocumento.Categoria.IDENTIDADE,
@@ -158,6 +164,18 @@ TIPOS_DOCUMENTO = (
         TipoDocumento.Sensibilidade.PESSOAL,
     ),
     (
+        "CURRICULO",
+        "Curriculum vitae",
+        TipoDocumento.Categoria.EMPREGO,
+        TipoDocumento.Sensibilidade.PESSOAL,
+    ),
+    (
+        "DECLARACAO_FORMADORA",
+        "Declaração da entidade formadora",
+        TipoDocumento.Categoria.FORMACAO,
+        TipoDocumento.Sensibilidade.PESSOAL,
+    ),
+    (
         "CERTIFICADO_FORMACAO",
         "Certificado de formação",
         TipoDocumento.Categoria.FORMACAO,
@@ -166,6 +184,12 @@ TIPOS_DOCUMENTO = (
     (
         "COMPROVATIVO_PAGAMENTO",
         "Comprovativo de pagamento",
+        TipoDocumento.Categoria.FINANCEIRO,
+        TipoDocumento.Sensibilidade.PESSOAL_SENSIVEL,
+    ),
+    (
+        "TITULARIDADE_BANCARIA",
+        "Comprovativo de titularidade bancária",
         TipoDocumento.Categoria.FINANCEIRO,
         TipoDocumento.Sensibilidade.PESSOAL_SENSIVEL,
     ),

@@ -47,6 +47,12 @@ input:focus-visible {
   outline-offset: 0.2rem;
 }
 
+select:focus-visible,
+textarea:focus-visible {
+  outline: 0.2rem solid var(--color-focus);
+  outline-offset: 0.2rem;
+}
+
 .skip-link {
   position: fixed;
   z-index: 100;
@@ -442,6 +448,19 @@ h3 {
   font: inherit;
 }
 
+.form-field select,
+.form-field textarea,
+.snapshot-panel select {
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #a9b7ae;
+  border-radius: var(--radius-small);
+  background: white;
+  color: var(--color-ink);
+  font: inherit;
+}
+
 .form-field input:hover {
   border-color: #6f8176;
 }
@@ -802,6 +821,117 @@ h3 {
   color: var(--color-muted);
 }
 
+.document-list,
+.version-timeline {
+  display: grid;
+  gap: 1rem;
+}
+
+.document-card,
+.version-card,
+.snapshot-panel {
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  border: 1px solid var(--color-border);
+  border-left-width: 0.35rem;
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+}
+
+.document-card h2,
+.version-card h2,
+.snapshot-panel h2 {
+  margin: 0.55rem 0 0.25rem;
+  font-size: clamp(1.2rem, 3vw, 1.55rem);
+}
+
+.document-card p,
+.version-card p,
+.snapshot-panel p {
+  margin: 0.25rem 0;
+  color: var(--color-muted);
+}
+
+.state-valido,
+.state-dispensado {
+  border-left-color: var(--color-primary);
+}
+
+.state-invalido {
+  border-left-color: #a33b2f;
+}
+
+.state-em_falta {
+  border-left-color: #b47b0b;
+}
+
+.document-status-row,
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.blocking-label,
+.rule-code {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: #fff2c7;
+  color: #6d5000;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rule-code {
+  margin-top: 0.6rem;
+  background: var(--color-background);
+  color: var(--color-muted);
+}
+
+.current-version,
+.version-card,
+.snapshot-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.current-version {
+  margin-top: 1.2rem;
+  padding: 1rem;
+  border-radius: var(--radius-small);
+  background: var(--color-background);
+}
+
+.current-version > div:first-child {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.current-version span {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.compact-editor {
+  margin-top: 0.85rem;
+}
+
+.snapshot-panel {
+  margin-top: 2rem;
+  border-left-color: var(--color-primary);
+}
+
+.snapshot-panel form {
+  min-width: min(100%, 20rem);
+  display: grid;
+  gap: 0.7rem;
+}
+
 .identity-card {
   display: grid;
   gap: 0.2rem;
@@ -846,6 +976,13 @@ h3 {
   .detail-header,
   .section-heading-inline,
   .list-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .current-version,
+  .version-card,
+  .snapshot-panel {
     align-items: flex-start;
     flex-direction: column;
   }

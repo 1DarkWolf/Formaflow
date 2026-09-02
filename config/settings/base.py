@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "apps.regras.apps.RegrasConfig",
     "apps.formacoes.apps.FormacoesConfig",
     "apps.candidaturas.apps.CandidaturasConfig",
+    "apps.documentos.apps.DocumentosConfig",
 ]
 
 MIDDLEWARE = [

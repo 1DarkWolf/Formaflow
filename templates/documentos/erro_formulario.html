@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Corrigir documento — Forma Flow{% endblock %}
+
+{% block content %}
+  <div class="auth-layout auth-layout-single">
+    <section class="auth-card auth-card-wide">
+      <p class="eyebrow">Documento não alterado</p>
+      <h1 class="page-title">{{ titulo_erro }}</h1>
+      <form class="stacked-form" method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% include "includes/formulario.html" with form=form %}
+        <p class="muted-copy">Volte à checklist para repetir a operação no requisito correto.</p>
+      </form>
+      <a class="button button-secondary" href="{% url 'documentos:checklist' candidatura.public_id %}">Voltar à checklist</a>
+    </section>
+  </div>
+{% endblock %}

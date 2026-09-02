@@ -140,6 +140,13 @@ class VinculoLaboral(ModeloTemporal):
         null=True,
         related_name="vinculos_laborais_confirmados",
     )
+    evidencia = models.ForeignKey(
+        "documentos.VersaoDocumento",
+        on_delete=models.PROTECT,
+        related_name="vinculos_laborais_comprovados",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = "vínculo laboral"
@@ -201,6 +208,13 @@ class ContaPagamento(ModeloTemporal):
         blank=True,
         null=True,
         related_name="contas_pagamento_validadas",
+    )
+    comprovativo = models.ForeignKey(
+        "documentos.VersaoDocumento",
+        on_delete=models.PROTECT,
+        related_name="contas_pagamento_comprovadas",
+        blank=True,
+        null=True,
     )
 
     class Meta:
@@ -297,6 +311,13 @@ class CertificacaoFormadora(ModeloTemporal):
         blank=True,
         null=True,
         related_name="certificacoes_formadoras_verificadas",
+    )
+    evidencia = models.ForeignKey(
+        "documentos.VersaoDocumento",
+        on_delete=models.PROTECT,
+        related_name="certificacoes_formadoras_comprovadas",
+        blank=True,
+        null=True,
     )
 
     class Meta:

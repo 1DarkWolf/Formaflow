@@ -33,7 +33,7 @@ class VinculoLaboralAdmin(admin.ModelAdmin):
     list_display = ("candidato", "situacao", "empresa", "inicio_em", "fim_em")
     list_filter = ("situacao",)
     search_fields = ("candidato__utilizador__email", "empresa__denominacao_legal")
-    autocomplete_fields = ("candidato", "empresa", "confirmado_por")
+    autocomplete_fields = ("candidato", "empresa", "confirmado_por", "evidencia")
     readonly_fields = ("criado_em", "atualizado_em")
 
 
@@ -43,7 +43,7 @@ class ContaPagamentoAdmin(admin.ModelAdmin):
     list_display = ("nome_titular", "iban_mascarado", "principal", "ativa")
     list_filter = ("principal", "ativa")
     search_fields = ("nome_titular", "iban_ultimos_4")
-    autocomplete_fields = ("candidato", "empresa", "validada_por")
+    autocomplete_fields = ("candidato", "empresa", "validada_por", "comprovativo")
     readonly_fields = (
         "iban_mascarado",
         "validada_em",
@@ -75,5 +75,5 @@ class CertificacaoFormadoraAdmin(admin.ModelAdmin):
         "area_codigo",
         "numero_certificacao",
     )
-    autocomplete_fields = ("entidade_formadora", "verificada_por")
+    autocomplete_fields = ("entidade_formadora", "verificada_por", "evidencia")
     readonly_fields = ("criado_em", "atualizado_em")

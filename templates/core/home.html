@@ -8,8 +8,8 @@
       <p class="eyebrow">Preparação por etapas</p>
       <h1 id="titulo-pagina">Candidaturas e formação num só fluxo</h1>
       <p class="hero-copy">
-        O Forma Flow já cria rascunhos individuais e empresariais, valida beneficiários,
-        organiza ações de formação e protege alterações feitas em sessões concorrentes.
+        O Forma Flow cria rascunhos individuais e empresariais, organiza ações de formação
+        e mantém os comprovativos em armazenamento privado com histórico completo.
       </p>
       <div class="actions">
         {% if user.is_authenticated %}
@@ -23,8 +23,8 @@
     <div class="status-panel" aria-label="Estado da implementação">
       <span class="status-dot" aria-hidden="true"></span>
       <div>
-        <strong>Incremento 03 operacional</strong>
-        <span>Rascunhos · beneficiários · formação · custos</span>
+        <strong>Incremento 04 operacional</strong>
+        <span>Checklist · PDFs privados · versões · snapshots</span>
       </div>
     </div>
   </section>
@@ -34,18 +34,18 @@
     <div class="card-grid">
       <article class="card">
         <span class="card-number" aria-hidden="true">01</span>
-        <h3>Dois tipos de candidatura</h3>
-        <p>O titular e os beneficiários mantêm-se coerentes nos percursos individual e empresarial.</p>
+        <h3>Checklist dinâmica</h3>
+        <p>Os requisitos são organizados por candidatura, beneficiário, formação e fase.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">02</span>
-        <h3>Formação estruturada</h3>
-        <p>Componentes CNQ e extra-CNQ determinam automaticamente a tipologia e as horas.</p>
+        <h3>Ficheiros privados</h3>
+        <p>Extensão, assinatura e tamanho são validados antes de guardar cada PDF com chave aleatória.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">03</span>
-        <h3>Edição segura</h3>
-        <p>Uma versão desatualizada recebe conflito e nunca substitui alterações mais recentes.</p>
+        <h3>Histórico preservado</h3>
+        <p>Substituições criam versões e os snapshots mantêm a prova exata usada na preparação.</p>
       </article>
     </div>
   </section>
@@ -53,9 +53,9 @@
   <section class="next-step" aria-labelledby="proximo-passo">
     <div>
       <p class="eyebrow">Próximo incremento</p>
-      <h2 id="proximo-passo">IMP-04 — Documentos e checklist</h2>
-      <p>O próximo incremento acrescentará ficheiros privados, versões e snapshots imutáveis.</p>
+      <h2 id="proximo-passo">IMP-05 — Submissão e workflow</h2>
+      <p>O próximo incremento registará acontecimentos externos, estados e transições auditáveis.</p>
     </div>
-    <span class="next-code">04 / 09</span>
+    <span class="next-code">05 / 09</span>
   </section>
 {% endblock %}

@@ -171,7 +171,9 @@ Cada onda terá migração, teste de aplicação numa base vazia e teste de atua
 
 Objetivo: criar um projeto vazio, executável e reproduzível.
 
-Entregáveis futuros:
+Estado: **concluído em 2 de setembro de 2026**.
+
+Entregáveis implementados:
 
 - ambiente e versões confirmados;
 - estrutura `config`, `apps`, templates e static;
@@ -267,13 +269,13 @@ Entregáveis futuros:
 - download autorizado e auditado;
 - snapshot imutável da submissão.
 
-Concluído quando:
+Critérios verificados:
 
-- documentos de outra candidatura nunca ficam acessíveis;
-- uma versão corrente é única;
-- ficheiro inválido não satisfaz requisito;
-- snapshot mantém as versões exatas mesmo após substituição;
-- temporários e falhas não deixam registos válidos órfãos.
+- [x] Documentos de outra candidatura nunca ficam acessíveis.
+- [x] Uma versão corrente é única.
+- [x] Ficheiro inválido não satisfaz requisito.
+- [x] Snapshot mantém as versões exatas mesmo após substituição.
+- [x] Temporários e falhas não deixam registos válidos órfãos.
 
 ### IMP-05 — Máquina de estados e análise
 

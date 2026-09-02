@@ -4,9 +4,9 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação concluiu os incrementos `IMP-00 — Preparar a base do projeto`, `IMP-01 — Identidade e autenticação`, `IMP-02 — Organizações, regras e dados de referência` e `IMP-03 — Formação e núcleo da candidatura`.
+A implementação concluiu os incrementos `IMP-00 — Preparar a base do projeto`, `IMP-01 — Identidade e autenticação`, `IMP-02 — Organizações, regras e dados de referência`, `IMP-03 — Formação e núcleo da candidatura` e `IMP-04 — Documentos, checklist e snapshots`.
 
-Estão disponíveis autenticação por email, organizações com âmbito de acesso, contas de pagamento protegidas, regras imutáveis, ações e componentes de formação e candidaturas individuais ou empresariais preparadas por etapas. Beneficiários, participações, verificações básicas e edição concorrente estão incluídos. O próximo incremento é o `IMP-04`, dedicado aos documentos, checklist e snapshots.
+Estão disponíveis autenticação por email, organizações com âmbito de acesso, contas de pagamento protegidas, regras imutáveis, ações e componentes de formação e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental é dinâmica, os PDFs ficam em armazenamento privado com versões, os downloads voltam a verificar permissões e snapshots imutáveis preservam a preparação. O próximo incremento é o `IMP-05`, dedicado à máquina de estados e análise.
 
 ## Requisitos
 
@@ -97,6 +97,7 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17.
 - `/conta/painel/` — painel autenticado;
 - `/candidaturas/` — candidaturas visíveis e assistente de preparação;
 - `/candidaturas/nova/` — criação de rascunho individual ou empresarial;
+- `/documentos/candidatura/<uuid>/` — checklist e comprovativos privados da candidatura;
 - `/organizacoes/empresas/` — empresas visíveis no âmbito do utilizador;
 - `/regras/` — versões de regras visíveis e publicação autorizada;
 - `/admin/` — administração técnica para contas autorizadas.

@@ -469,6 +469,13 @@ class VerificacaoElegibilidade(ModeloTemporal):
         blank=True,
         null=True,
     )
+    evidencia = models.ForeignKey(
+        "documentos.VersaoDocumento",
+        on_delete=models.PROTECT,
+        related_name="verificacoes_elegibilidade_comprovadas",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = "verificação de elegibilidade"

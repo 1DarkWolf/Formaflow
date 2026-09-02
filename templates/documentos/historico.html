@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico documental — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Percurso">
+    <a href="{% url 'documentos:checklist' candidatura.public_id %}">Documentos</a>
+    <span aria-hidden="true">/</span>
+    <span>Histórico</span>
+  </nav>
+  <header class="detail-header">
+    <div>
+      <p class="eyebrow">Histórico documental</p>
+      <h1 class="page-title">{{ documento }}</h1>
+      <p class="hero-copy">As versões anteriores permanecem disponíveis e nunca são sobrescritas.</p>
+    </div>
+  </header>
+
+  <div class="version-timeline">
+    {% for versao in versoes %}
+      <article class="version-card">
+        <div>
+          <span class="status-label">{% if versao.corrente %}Corrente{% else %}Histórica{% endif %}</span>
+          <h2>Versão {{ versao.numero }}</h2>
+          <p>{{ versao.ficheiro.nome_original }} · {{ versao.ficheiro.tamanho_bytes|filesizeformat }}</p>
+          <p>{{ versao.get_estado_validacao_display }} · carregada em {{ versao.carregada_em|date:"d/m/Y H:i" }}</p>
+          {% if versao.motivo_substituicao %}<p><strong>Substituição:</strong> {{ versao.motivo_substituicao }}</p>{% endif %}
+          {% if versao.observacao_validacao %}<p><strong>Validação:</strong> {{ versao.observacao_validacao }}</p>{% endif %}
+        </div>
+        <a class="button button-secondary" href="{% url 'documentos:descarregar' documento.public_id versao.numero %}">Descarregar esta versão</a>
+      </article>
+    {% endfor %}
+  </div>
+
+  {% if pode_substituir %}
+    <details class="editor-panel">
+      <summary>Carregar nova versão</summary>
+      <form method="post" enctype="multipart/form-data" action="{% url 'documentos:substituir' documento.public_id %}" novalidate>
+        {% csrf_token %}
+        {% include "includes/formulario.html" with form=replace_form %}
+        <button class="button button-primary" type="submit">Guardar nova versão</button>
+      </form>
+    </details>
+  {% endif %}
+{% endblock %}
