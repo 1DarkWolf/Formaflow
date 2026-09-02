@@ -1,0 +1,31 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Forma Flow — acompanhamento de processos de formação.">
+    <title>{% block title %}Forma Flow{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
+    <header class="site-header">
+      <div class="container header-content">
+        <a class="brand" href="{% url 'core:home' %}" aria-label="Forma Flow — início">
+          <span class="brand-mark" aria-hidden="true">F</span>
+          <span>Forma Flow</span>
+        </a>
+        <span class="phase-badge">IMP-00</span>
+      </div>
+    </header>
+
+    <main id="conteudo" class="container main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">Projeto académico — dados de demonstração serão fictícios.</div>
+    </footer>
+  </body>
+</html>

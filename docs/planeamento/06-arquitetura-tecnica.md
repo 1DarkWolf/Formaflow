@@ -57,12 +57,12 @@ A referência técnica foi verificada em 2 de setembro de 2026. A base preferenc
 
 | Componente | Linha planeada | Política |
 | --- | --- | --- |
-| Python | 3.13, última correção disponível | Versão madura, suportada pelo Django escolhido e isolada em `.venv` |
+| Python | 3.12, última correção disponível | Versão disponível e confirmada no ambiente, suportada pelo Django escolhido e isolada em `.venv` |
 | Django | 5.2 LTS, última correção disponível | Suporte de segurança oficial até abril de 2028 |
 | PostgreSQL | 17, última correção disponível | Suporte oficial até novembro de 2029 |
 | Adaptador PostgreSQL | `psycopg`, versão compatível fixada | Atualizado dentro da linha compatível após testes |
 
-Não serão usados lançamentos de desenvolvimento. Antes do primeiro ficheiro de código serão confirmadas as versões realmente disponíveis no computador. As versões exatas ficarão fixadas no repositório e qualquer atualização terá testes e commit próprios.
+Não serão usados lançamentos de desenvolvimento. No início do `IMP-00` foi confirmado Python 3.12.13 no runtime disponível. As versões exatas ficam fixadas no repositório e qualquer atualização terá testes e commit próprios.
 
 ### 4.2. Dependências iniciais
 

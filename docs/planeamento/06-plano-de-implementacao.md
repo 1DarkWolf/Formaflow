@@ -480,8 +480,8 @@ A autorização de G0 não autoriza automaticamente G1 a G4.
 - [x] Aplicações, camadas e dependências planeadas.
 - [x] Ordem de migrações e incrementos planeada.
 - [x] Estratégias de segurança, testes e ambientes definidas.
-- [ ] Autorização explícita para começar código.
-- [ ] Versões instaladas no computador confirmadas.
+- [x] Autorização explícita para começar código.
+- [x] Runtime Python 3.12.13 e dependências iniciais confirmados.
 - [ ] Forma de executar PostgreSQL no desenvolvimento confirmada.
 
 ## 14. Resultado
