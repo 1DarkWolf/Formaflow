@@ -14,3 +14,5 @@ O projeto encontra-se na fase de planeamento. A implementação em Django ainda 
 - [Tópico 04 - Fluxo e estados da candidatura](docs/planeamento/04-fluxo-e-estados.md)
 - [Tópico 05 - Modelo de dados definitivo](docs/planeamento/05-modelo-de-dados.md)
   - [Dicionário de dados](docs/planeamento/05-dicionario-de-dados.md)
+- [Tópico 06 - Arquitetura técnica](docs/planeamento/06-arquitetura-tecnica.md)
+  - [Plano de implementação](docs/planeamento/06-plano-de-implementacao.md)
