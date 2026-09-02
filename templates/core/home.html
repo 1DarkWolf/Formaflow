@@ -1,26 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Estrutura inicial — Forma Flow{% endblock %}
+{% block title %}Identidade e autenticação — Forma Flow{% endblock %}
 
 {% block content %}
   <section class="hero" aria-labelledby="titulo-pagina">
     <div>
-      <p class="eyebrow">Implementação iniciada</p>
-      <h1 id="titulo-pagina">Base técnica preparada</h1>
+      <p class="eyebrow">Identidade preparada</p>
+      <h1 id="titulo-pagina">Acesso seguro ao Forma Flow</h1>
       <p class="hero-copy">
-        O Forma Flow já tem uma estrutura Django organizada, configurações separadas por ambiente
-        e verificações automáticas. Os módulos de negócio começam no próximo incremento.
+        O sistema já permite criar e ativar uma conta de candidato, iniciar e terminar sessão
+        e recuperar o acesso sem revelar se um email está registado.
       </p>
       <div class="actions">
-        <a class="button button-primary" href="{% url 'core:health' %}">Verificar aplicação</a>
-        <a class="button button-secondary" href="https://github.com/1DarkWolf/Formaflow">Abrir repositório</a>
+        {% if user.is_authenticated %}
+          <a class="button button-primary" href="{% url 'contas:dashboard' %}">Abrir o meu painel</a>
+        {% else %}
+          <a class="button button-primary" href="{% url 'contas:login' %}">Iniciar sessão</a>
+          <a class="button button-secondary" href="{% url 'contas:registar' %}">Criar conta</a>
+        {% endif %}
       </div>
     </div>
     <div class="status-panel" aria-label="Estado da implementação">
       <span class="status-dot" aria-hidden="true"></span>
       <div>
-        <strong>Estrutura operacional</strong>
-        <span>Django 5.2 LTS · Python 3.12</span>
+        <strong>Autenticação operacional</strong>
+        <span>Email normalizado · ativação protegida</span>
       </div>
     </div>
   </section>
@@ -30,18 +34,18 @@
     <div class="card-grid">
       <article class="card">
         <span class="card-number" aria-hidden="true">01</span>
-        <h3>Configuração segura</h3>
-        <p>Ambientes local, teste e produção separados, com segredos fora do Git.</p>
+        <h3>Identidade única</h3>
+        <p>Cada pessoa utiliza um email único, guardado de forma normalizada.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">02</span>
-        <h3>Qualidade automática</h3>
-        <p>Formatação, análise estática, testes e cobertura preparados para cada commit.</p>
+        <h3>Acesso controlado</h3>
+        <p>Contas inativas não entram e cada sessão respeita o estado atual da conta.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">03</span>
-        <h3>Base de dados consistente</h3>
-        <p>PostgreSQL será a referência para restrições, transações e testes de integração.</p>
+        <h3>Recuperação discreta</h3>
+        <p>O pedido apresenta a mesma resposta, exista ou não uma conta com esse email.</p>
       </article>
     </div>
   </section>
@@ -49,9 +53,9 @@
   <section class="next-step" aria-labelledby="proximo-passo">
     <div>
       <p class="eyebrow">Próximo incremento</p>
-      <h2 id="proximo-passo">IMP-01 — Identidade e autenticação</h2>
-      <p>O modelo de utilizador próprio será criado antes da primeira migração do projeto.</p>
+      <h2 id="proximo-passo">IMP-02 — Organizações e regras</h2>
+      <p>O próximo incremento ligará gestores e candidatos às respetivas organizações.</p>
     </div>
-    <span class="next-code">01 / 09</span>
+    <span class="next-code">02 / 09</span>
   </section>
 {% endblock %}

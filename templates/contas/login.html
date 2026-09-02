@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sessão — Forma Flow{% endblock %}
+
+{% block content %}
+  <section class="auth-layout" aria-labelledby="titulo-pagina">
+    <div class="auth-card">
+      <p class="eyebrow">Área reservada</p>
+      <h1 id="titulo-pagina" class="page-title">Iniciar sessão</h1>
+      <p class="section-copy">Use o email e a palavra-passe associados à sua conta.</p>
+      <form method="post" class="stacked-form" novalidate>
+        {% csrf_token %}
+        {% include "includes/formulario.html" %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <button class="button button-primary" type="submit">Iniciar sessão</button>
+      </form>
+      <div class="auth-links">
+        <a href="{% url 'contas:password_reset' %}">Esqueci-me da palavra-passe</a>
+        <a href="{% url 'contas:registar' %}">Criar conta de candidato</a>
+      </div>
+    </div>
+    <aside class="auth-aside">
+      <p class="eyebrow">Privacidade</p>
+      <h2>Um acesso para cada pessoa</h2>
+      <p>Os seus dados, documentos e processos serão apresentados apenas no contexto autorizado.</p>
+    </aside>
+  </section>
+{% endblock %}

@@ -192,7 +192,9 @@ Concluído quando:
 
 Objetivo: criar o utilizador próprio e os perfis básicos antes das restantes migrações.
 
-Entregáveis futuros:
+Estado: **concluído em 2 de setembro de 2026**.
+
+Entregáveis implementados:
 
 - `Utilizador` e `PerfilCandidato`;
 - entrada e saída por email;
@@ -200,13 +202,13 @@ Entregáveis futuros:
 - grupos iniciais do Tópico 2;
 - layout autenticado básico.
 
-Concluído quando:
+Critérios verificados:
 
-- migrações funcionam numa base vazia;
-- email normalizado é único;
-- utilizador inativo não entra;
-- permissões e recuperação não revelam contas;
-- testes positivos e negativos passam.
+- [x] Migrações funcionam numa base vazia.
+- [x] Email normalizado é único.
+- [x] Utilizador inativo não entra.
+- [x] Permissões e recuperação não revelam contas.
+- [x] Testes positivos e negativos passam.
 
 ### IMP-02 — Organizações, regras e dados de referência
 

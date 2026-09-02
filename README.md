@@ -4,9 +4,9 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação foi iniciada pelo `IMP-00 — Preparar a base do projeto`.
+A implementação concluiu os incrementos `IMP-00 — Preparar a base do projeto` e `IMP-01 — Identidade e autenticação`.
 
-Estão disponíveis a estrutura Django, configurações por ambiente, página inicial, endpoint de saúde, primeiro conjunto de testes e verificações de qualidade. Os modelos de negócio e as migrações começam no `IMP-01`, com o utilizador próprio.
+Estão disponíveis a estrutura Django, configurações por ambiente, utilizador próprio, perfil de candidato, autenticação por email, ativação, recuperação de acesso, grupos iniciais e administração técnica. O próximo incremento é o `IMP-02`, dedicado a organizações, regras e dados de referência.
 
 ## Requisitos
 
@@ -27,20 +27,27 @@ python -m pip install -r requirements\development.txt
 Copy-Item .env.example .env
 ```
 
-Depois de criar a base e o utilizador PostgreSQL, ajuste as variáveis `POSTGRES_*` no ficheiro `.env`.
-
-Ainda não execute `migrate`. O modelo de utilizador próprio será criado no `IMP-01` e tem de existir antes da primeira migração geral.
-
-### Arranque temporário sem PostgreSQL
-
-Para verificar apenas a página inicial e o endpoint de saúde enquanto PostgreSQL não estiver instalado:
+Depois de criar a base e o utilizador PostgreSQL, ajuste as variáveis `POSTGRES_*` no ficheiro `.env` e execute:
 
 ```powershell
-$env:DJANGO_DATABASE_ENGINE = "sqlite"
+python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Abra `http://127.0.0.1:8000/`. Este modo não valida restrições, bloqueios ou concorrência PostgreSQL.
+O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
+
+### Arranque temporário sem PostgreSQL
+
+Para experimentar a aplicação enquanto PostgreSQL não estiver instalado:
+
+```powershell
+$env:DJANGO_DATABASE_ENGINE = "sqlite"
+python manage.py migrate
+python manage.py runserver
+```
+
+Abra `http://127.0.0.1:8000/`. Este modo permite testar a interface e a autenticação, mas não substitui a validação de restrições, bloqueios e concorrência em PostgreSQL.
 
 ## Verificações de desenvolvimento
 
@@ -70,7 +77,12 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17.
 - [Tópico 08 - Testes, validação e demonstração](docs/planeamento/08-plano-de-testes.md)
   - [Catálogo de casos de teste](docs/planeamento/08-catalogo-casos-teste.md)
 
-## Endpoints iniciais
+## Endpoints disponíveis
 
-- `/` — página de confirmação da estrutura inicial;
+- `/` — página inicial;
 - `/health/` — resposta de saúde da aplicação, sem dados internos.
+- `/conta/registar/` — criação e ativação de conta de candidato;
+- `/conta/entrar/` e `/conta/sair/` — início e fim de sessão;
+- `/conta/recuperar/` — recuperação de palavra-passe;
+- `/conta/painel/` — layout autenticado inicial;
+- `/admin/` — administração técnica para contas autorizadas.

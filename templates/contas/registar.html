@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Criar conta — Forma Flow{% endblock %}
+
+{% block content %}
+  <section class="auth-layout" aria-labelledby="titulo-pagina">
+    <div class="auth-card auth-card-wide">
+      <p class="eyebrow">Conta de candidato</p>
+      <h1 id="titulo-pagina" class="page-title">Criar conta</h1>
+      <p class="section-copy">Preencha os dados essenciais. A conta só fica ativa após usar o link enviado por email.</p>
+      <form method="post" class="stacked-form" novalidate>
+        {% csrf_token %}
+        {% include "includes/formulario.html" %}
+        <button class="button button-primary" type="submit">Criar conta</button>
+      </form>
+      <div class="auth-links">
+        <a href="{% url 'contas:login' %}">Já tenho uma conta</a>
+      </div>
+    </div>
+    <aside class="auth-aside">
+      <p class="eyebrow">Antes de continuar</p>
+      <h2>Dados atuais, histórico preservado</h2>
+      <p>O NIF e a data de nascimento permitem criar o perfil base. Os restantes dados serão completados apenas quando forem necessários.</p>
+    </aside>
+  </section>
+{% endblock %}

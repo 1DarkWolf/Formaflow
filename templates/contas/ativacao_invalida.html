@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Ligação inválida — Forma Flow{% endblock %}
+
+{% block content %}
+  <section class="notice-card" aria-labelledby="titulo-pagina">
+    <p class="eyebrow">Ativação não concluída</p>
+    <h1 id="titulo-pagina" class="page-title">Esta ligação já não é válida</h1>
+    <p>A ligação pode ter expirado, já ter sido utilizada ou estar incompleta.</p>
+    <a class="button button-primary" href="{% url 'contas:login' %}">Voltar ao início de sessão</a>
+  </section>
+{% endblock %}

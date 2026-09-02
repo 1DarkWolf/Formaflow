@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "apps.contas.apps.ContasConfig",
     "apps.core.apps.CoreConfig",
 ]
 
@@ -83,6 +84,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 DATABASES = {"default": postgres_database()}
+
+AUTH_USER_MODEL = "contas.Utilizador"
+LOGIN_URL = "contas:login"
+LOGIN_REDIRECT_URL = "contas:dashboard"
+LOGOUT_REDIRECT_URL = "core:home"
 
 AUTH_PASSWORD_VALIDATORS = [
     {

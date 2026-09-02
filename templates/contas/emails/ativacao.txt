@@ -1,0 +1,6 @@
+Olá, {{ nome }}.
+
+Use a ligação seguinte para ativar a sua conta Forma Flow:
+{{ url_ativacao }}
+
+Se não criou esta conta, ignore esta mensagem.

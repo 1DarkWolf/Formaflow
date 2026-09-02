@@ -16,11 +16,29 @@
           <span class="brand-mark" aria-hidden="true">F</span>
           <span>Forma Flow</span>
         </a>
-        <span class="phase-badge">IMP-00</span>
+        <div class="header-actions">
+          {% if user.is_authenticated %}
+            <a class="header-link" href="{% url 'contas:dashboard' %}">{{ user.get_short_name }}</a>
+            <form method="post" action="{% url 'contas:logout' %}">
+              {% csrf_token %}
+              <button class="header-link button-link" type="submit">Terminar sessão</button>
+            </form>
+          {% else %}
+            <a class="header-link" href="{% url 'contas:login' %}">Iniciar sessão</a>
+          {% endif %}
+          <span class="phase-badge">IMP-01</span>
+        </div>
       </div>
     </header>
 
     <main id="conteudo" class="container main-content">
+      {% if messages %}
+        <div class="messages" aria-live="polite">
+          {% for message in messages %}
+            <div class="message{% if message.tags %} message-{{ message.tags }}{% endif %}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
       {% block content %}{% endblock %}
     </main>
 

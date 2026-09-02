@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Confirme o email — Forma Flow{% endblock %}
+
+{% block content %}
+  <section class="notice-card" aria-labelledby="titulo-pagina">
+    <p class="eyebrow">Conta criada</p>
+    <h1 id="titulo-pagina" class="page-title">Confirme o seu email</h1>
+    <p>Enviámos as instruções de ativação. Abra o link recebido antes de tentar iniciar sessão.</p>
+    <a class="button button-secondary" href="{% url 'contas:login' %}">Voltar ao início de sessão</a>
+  </section>
+{% endblock %}

@@ -8,7 +8,7 @@ class HomeViewTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Forma Flow")
-        self.assertContains(response, "Base técnica preparada")
+        self.assertContains(response, "Acesso seguro ao Forma Flow")
 
     def test_home_rejects_unsafe_methods(self):
         response = self.client.post(reverse("core:home"))
