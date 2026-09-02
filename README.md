@@ -16,3 +16,5 @@ O projeto encontra-se na fase de planeamento. A implementação em Django ainda 
   - [Dicionário de dados](docs/planeamento/05-dicionario-de-dados.md)
 - [Tópico 06 - Arquitetura técnica](docs/planeamento/06-arquitetura-tecnica.md)
   - [Plano de implementação](docs/planeamento/06-plano-de-implementacao.md)
+- [Tópico 07 - Interface e experiência do utilizador](docs/planeamento/07-interface-e-experiencia.md)
+  - [Inventário de ecrãs e wireframes](docs/planeamento/07-inventario-e-wireframes.md)
