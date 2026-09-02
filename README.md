@@ -12,3 +12,5 @@ O projeto encontra-se na fase de planeamento. A implementação em Django ainda 
 - [Tópico 02 - Perfis e permissões](docs/planeamento/02-perfis-e-permissoes.md)
 - [Tópico 03 - Regras de negócio](docs/planeamento/03-regras-de-negocio.md)
 - [Tópico 04 - Fluxo e estados da candidatura](docs/planeamento/04-fluxo-e-estados.md)
+- [Tópico 05 - Modelo de dados definitivo](docs/planeamento/05-modelo-de-dados.md)
+  - [Dicionário de dados](docs/planeamento/05-dicionario-de-dados.md)
