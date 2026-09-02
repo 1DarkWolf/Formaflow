@@ -4,9 +4,9 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação concluiu os incrementos `IMP-00 — Preparar a base do projeto` e `IMP-01 — Identidade e autenticação`.
+A implementação concluiu os incrementos `IMP-00 — Preparar a base do projeto`, `IMP-01 — Identidade e autenticação` e `IMP-02 — Organizações, regras e dados de referência`.
 
-Estão disponíveis a estrutura Django, configurações por ambiente, utilizador próprio, perfil de candidato, autenticação por email, ativação, recuperação de acesso, grupos iniciais e administração técnica. O próximo incremento é o `IMP-02`, dedicado a organizações, regras e dados de referência.
+Estão disponíveis autenticação por email, perfis de candidato, empresas e respetivos âmbitos de acesso, vínculos laborais, entidades formadoras, contas de pagamento com IBAN cifrado, regras publicadas imutáveis, feriados, tipos documentais e administração técnica. O próximo incremento é o `IMP-03`, dedicado à formação e ao núcleo da candidatura.
 
 ## Requisitos
 
@@ -31,11 +31,21 @@ Depois de criar a base e o utilizador PostgreSQL, ajuste as variáveis `POSTGRES
 
 ```powershell
 python manage.py migrate
+python manage.py carregar_dados_demonstracao
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
-O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
+O comando `carregar_dados_demonstracao` é idempotente e cria apenas referências claramente fictícias: uma empresa, uma entidade formadora, parâmetros, tipos documentais e feriados. O conjunto de regras fica em rascunho e deve ser revisto antes de ser publicado. O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
+
+Em desenvolvimento, as chaves de proteção de dados são derivadas da chave do Django quando `DATA_ENCRYPTION_KEY` e `DATA_HASH_KEY` ficam vazias. Em produção, defina valores independentes e secretos. Pode gerar valores adequados com:
+
+```powershell
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Use o primeiro resultado em `DATA_ENCRYPTION_KEY` e o segundo em `DATA_HASH_KEY`. Nunca os guarde no Git.
 
 ### Arranque temporário sem PostgreSQL
 
@@ -80,9 +90,11 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17.
 ## Endpoints disponíveis
 
 - `/` — página inicial;
-- `/health/` — resposta de saúde da aplicação, sem dados internos.
+- `/health/` — resposta de saúde da aplicação, sem dados internos;
 - `/conta/registar/` — criação e ativação de conta de candidato;
 - `/conta/entrar/` e `/conta/sair/` — início e fim de sessão;
 - `/conta/recuperar/` — recuperação de palavra-passe;
-- `/conta/painel/` — layout autenticado inicial;
+- `/conta/painel/` — painel autenticado;
+- `/organizacoes/empresas/` — empresas visíveis no âmbito do utilizador;
+- `/regras/` — versões de regras visíveis e publicação autorizada;
 - `/admin/` — administração técnica para contas autorizadas.

@@ -2,6 +2,7 @@
 
 import os
 
+from cryptography.fernet import Fernet
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
@@ -18,6 +19,15 @@ if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS é obrigatória em produção.")
 if not POSTGRES_PASSWORD or POSTGRES_PASSWORD == "change-this-password":
     raise ImproperlyConfigured("POSTGRES_PASSWORD é obrigatória em produção.")
+if not os.getenv("DATA_ENCRYPTION_KEY"):
+    raise ImproperlyConfigured("DATA_ENCRYPTION_KEY é obrigatória em produção.")
+if not os.getenv("DATA_HASH_KEY"):
+    raise ImproperlyConfigured("DATA_HASH_KEY é obrigatória em produção.")
+
+try:
+    Fernet(DATA_ENCRYPTION_KEY.encode())  # noqa: F405
+except (TypeError, ValueError) as error:
+    raise ImproperlyConfigured("DATA_ENCRYPTION_KEY não é uma chave Fernet válida.") from error
 
 DEBUG = False
 DATABASES = {"default": postgres_database()}  # noqa: F405

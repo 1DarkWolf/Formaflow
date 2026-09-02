@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Identidade e autenticação — Forma Flow{% endblock %}
+{% block title %}Organizações e regras — Forma Flow{% endblock %}
 
 {% block content %}
   <section class="hero" aria-labelledby="titulo-pagina">
     <div>
-      <p class="eyebrow">Identidade preparada</p>
-      <h1 id="titulo-pagina">Acesso seguro ao Forma Flow</h1>
+      <p class="eyebrow">Base organizacional preparada</p>
+      <h1 id="titulo-pagina">Organizações e regras sob controlo</h1>
       <p class="hero-copy">
-        O sistema já permite criar e ativar uma conta de candidato, iniciar e terminar sessão
-        e recuperar o acesso sem revelar se um email está registado.
+        Empresas, vínculos laborais, entidades formadoras e regras versionadas já têm
+        modelos próprios, acesso por âmbito e proteção para os dados de pagamento.
       </p>
       <div class="actions">
         {% if user.is_authenticated %}
@@ -23,29 +23,29 @@
     <div class="status-panel" aria-label="Estado da implementação">
       <span class="status-dot" aria-hidden="true"></span>
       <div>
-        <strong>Autenticação operacional</strong>
-        <span>Email normalizado · ativação protegida</span>
+        <strong>Incremento 02 operacional</strong>
+        <span>Âmbitos isolados · regras imutáveis · IBAN cifrado</span>
       </div>
     </div>
   </section>
 
   <section aria-labelledby="fundacoes">
-    <h2 id="fundacoes">Fundações do projeto</h2>
+    <h2 id="fundacoes">Capacidades disponíveis</h2>
     <div class="card-grid">
       <article class="card">
         <span class="card-number" aria-hidden="true">01</span>
-        <h3>Identidade única</h3>
-        <p>Cada pessoa utiliza um email único, guardado de forma normalizada.</p>
+        <h3>Organizações isoladas</h3>
+        <p>Cada gestor consulta apenas as empresas associadas ao seu âmbito atual.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">02</span>
-        <h3>Acesso controlado</h3>
-        <p>Contas inativas não entram e cada sessão respeita o estado atual da conta.</p>
+        <h3>Regras versionadas</h3>
+        <p>Uma versão publicada fica imutável e é escolhida pela data de referência.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">03</span>
-        <h3>Recuperação discreta</h3>
-        <p>O pedido apresenta a mesma resposta, exista ou não uma conta com esse email.</p>
+        <h3>Pagamento protegido</h3>
+        <p>O IBAN é cifrado e aparece na interface apenas com os últimos quatro caracteres.</p>
       </article>
     </div>
   </section>
@@ -53,9 +53,9 @@
   <section class="next-step" aria-labelledby="proximo-passo">
     <div>
       <p class="eyebrow">Próximo incremento</p>
-      <h2 id="proximo-passo">IMP-02 — Organizações e regras</h2>
-      <p>O próximo incremento ligará gestores e candidatos às respetivas organizações.</p>
+      <h2 id="proximo-passo">IMP-03 — Formação e candidatura</h2>
+      <p>O próximo incremento permitirá preparar candidaturas individuais e empresariais.</p>
     </div>
-    <span class="next-code">02 / 09</span>
+    <span class="next-code">03 / 09</span>
   </section>
 {% endblock %}

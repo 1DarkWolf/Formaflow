@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ empresa }} — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    <a href="{% url 'organizacoes:lista_empresas' %}">Empresas</a>
+    <span aria-hidden="true">/</span>
+    <span>Detalhe</span>
+  </nav>
+
+  <section class="detail-header" aria-labelledby="titulo-pagina">
+    <div>
+      <p class="eyebrow">Organização</p>
+      <h1 id="titulo-pagina" class="page-title">{{ empresa }}</h1>
+      {% if empresa.nome_comercial %}<p class="section-copy">{{ empresa.denominacao_legal }}</p>{% endif %}
+    </div>
+    <span class="status-label">{% if empresa.ativa %}Ativa{% else %}Inativa{% endif %}</span>
+  </section>
+
+  {% if mostrar_dados_institucionais %}
+    <dl class="definition-grid">
+      <div><dt>NIPC</dt><dd>{{ empresa.nipc }}</dd></div>
+      <div><dt>CAE principal</dt><dd>{{ empresa.cae_principal|default:"Não indicado" }}</dd></div>
+      <div><dt>Email</dt><dd>{{ empresa.email|default:"Não indicado" }}</dd></div>
+      <div><dt>Telefone</dt><dd>{{ empresa.telefone|default:"Não indicado" }}</dd></div>
+      <div><dt>Localidade</dt><dd>{{ empresa.localidade|default:"Não indicada" }}</dd></div>
+      <div><dt>Natureza jurídica</dt><dd>{{ empresa.natureza_juridica|default:"Não indicada" }}</dd></div>
+    </dl>
+  {% else %}
+    <div class="notice-inline">
+      A sua relação permite confirmar a identificação da empresa, mas não consultar os dados institucionais internos.
+    </div>
+  {% endif %}
+{% endblock %}

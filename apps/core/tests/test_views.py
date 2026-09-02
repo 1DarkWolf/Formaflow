@@ -3,12 +3,13 @@ from django.urls import reverse
 
 
 class HomeViewTests(SimpleTestCase):
-    def test_home_page_confirms_initial_project_status(self):
+    def test_home_page_confirms_current_project_status(self):
         response = self.client.get(reverse("core:home"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Forma Flow")
-        self.assertContains(response, "Acesso seguro ao Forma Flow")
+        self.assertContains(response, "Organizações e regras sob controlo")
+        self.assertContains(response, "IMP-03 — Formação e candidatura")
 
     def test_home_rejects_unsafe_methods(self):
         response = self.client.post(reverse("core:home"))

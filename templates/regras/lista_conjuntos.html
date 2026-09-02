@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Regras — Forma Flow{% endblock %}
+
+{% block content %}
+  <section class="section-header" aria-labelledby="titulo-pagina">
+    <div>
+      <p class="eyebrow">Configuração versionada</p>
+      <h1 id="titulo-pagina" class="page-title">Conjuntos de regras</h1>
+      <p class="section-copy">Cada versão publicada fica fechada para preservar os cálculos e decisões históricas.</p>
+    </div>
+  </section>
+
+  <div class="list-grid">
+    {% for conjunto in conjuntos %}
+      <article class="rule-card">
+        <div class="rule-card-header">
+          <div>
+            <span class="status-label">{{ conjunto.get_estado_display }}</span>
+            <h2>{{ conjunto.designacao }}</h2>
+            <p>{{ conjunto.codigo }} · versão {{ conjunto.versao }}</p>
+          </div>
+          {% if conjunto.referencia_demonstracao %}<span class="demo-label">Demonstração</span>{% endif %}
+        </div>
+        <dl class="rule-meta">
+          <div><dt>Desde</dt><dd>{{ conjunto.vigente_desde|date:"d/m/Y" }}</dd></div>
+          <div><dt>Até</dt><dd>{{ conjunto.vigente_ate|date:"d/m/Y"|default:"Sem data definida" }}</dd></div>
+          <div><dt>Parâmetros</dt><dd>{{ conjunto.parametros.count }}</dd></div>
+        </dl>
+        {% if pode_publicar and conjunto.estado == "RASCUNHO" %}
+          <form method="post" action="{% url 'regras:publicar' conjunto.pk %}">
+            {% csrf_token %}
+            <button class="button button-primary" type="submit">Publicar versão</button>
+          </form>
+        {% endif %}
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        <h2>Sem regras publicadas</h2>
+        <p>Um administrador terá de preparar e publicar a primeira versão.</p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

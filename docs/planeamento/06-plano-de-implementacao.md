@@ -214,7 +214,9 @@ Critérios verificados:
 
 Objetivo: criar a informação base necessária a uma candidatura.
 
-Entregáveis futuros:
+Estado: **concluído em 2 de setembro de 2026**.
+
+Entregáveis implementados:
 
 - empresas, associações, vínculos, contas mascaradas e formadoras;
 - conjuntos de regras, parâmetros, feriados e tipos documentais;
@@ -222,13 +224,13 @@ Entregáveis futuros:
 - dados fictícios mínimos e parâmetros do Tópico 3;
 - páginas administrativas controladas.
 
-Concluído quando:
+Critérios verificados:
 
-- gestor de uma empresa não consulta outra;
-- exclusividade de proprietário da conta é garantida;
-- versões publicadas das regras não são editáveis;
-- calendários úteis têm testes de limites e feriados;
-- nenhum NIF ou IBAN surge em logs ou URLs.
+- [x] Gestor de uma empresa não consulta outra.
+- [x] Exclusividade de proprietário da conta é garantida.
+- [x] Versões publicadas das regras não são editáveis.
+- [x] Calendários úteis têm testes de limites e feriados.
+- [x] Nenhum NIF ou IBAN surge em logs ou URLs.
 
 ### IMP-03 — Formação e núcleo da candidatura
 

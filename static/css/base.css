@@ -504,6 +504,132 @@ h3 {
   margin-bottom: clamp(2rem, 6vw, 4rem);
 }
 
+.section-header,
+.detail-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.list-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.list-card,
+.rule-card,
+.empty-state,
+.notice-inline {
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+}
+
+.list-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.list-card h2,
+.rule-card h2,
+.empty-state h2 {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+}
+
+.list-card p,
+.rule-card p,
+.empty-state p {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+}
+
+.status-label,
+.demo-label {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.demo-label {
+  background: #fff2c7;
+  color: #6d5000;
+}
+
+.breadcrumb {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.definition-grid,
+.rule-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-border);
+}
+
+.definition-grid > div,
+.rule-meta > div {
+  padding: 1.1rem;
+  background: var(--color-surface);
+}
+
+.definition-grid dt,
+.rule-meta dt {
+  color: var(--color-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.definition-grid dd,
+.rule-meta dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.rule-card {
+  display: grid;
+  gap: 1.4rem;
+}
+
+.rule-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rule-card form {
+  margin: 0;
+}
+
+.notice-inline {
+  color: var(--color-muted);
+}
+
 .identity-card {
   display: grid;
   gap: 0.2rem;
@@ -538,8 +664,17 @@ h3 {
   }
 
   .auth-layout,
-  .dashboard-header {
+  .dashboard-header,
+  .definition-grid,
+  .rule-meta {
     grid-template-columns: 1fr;
+  }
+
+  .section-header,
+  .detail-header,
+  .list-card {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .auth-aside {
@@ -570,6 +705,10 @@ h3 {
   }
 
   .phase-badge {
+    display: none;
+  }
+
+  .optional-nav {
     display: none;
   }
 }

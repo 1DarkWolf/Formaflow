@@ -1,5 +1,7 @@
 """Configurações comuns e seguras do Forma Flow."""
 
+import base64
+import hashlib
 import os
 from pathlib import Path
 
@@ -37,6 +39,11 @@ def postgres_database():
 
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-development-key-change-me")
+_development_encryption_key = base64.urlsafe_b64encode(
+    hashlib.sha256(f"formaflow-encryption:{SECRET_KEY}".encode()).digest()
+).decode()
+DATA_ENCRYPTION_KEY = os.getenv("DATA_ENCRYPTION_KEY") or _development_encryption_key
+DATA_HASH_KEY = os.getenv("DATA_HASH_KEY") or f"formaflow-hash:{SECRET_KEY}"
 DEBUG = False
 ALLOWED_HOSTS = []
 CSRF_TRUSTED_ORIGINS = []
@@ -50,6 +57,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.contas.apps.ContasConfig",
     "apps.core.apps.CoreConfig",
+    "apps.organizacoes.apps.OrganizacoesConfig",
+    "apps.regras.apps.RegrasConfig",
 ]
 
 MIDDLEWARE = [
