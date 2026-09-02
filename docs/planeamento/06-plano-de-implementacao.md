@@ -236,7 +236,9 @@ Critérios verificados:
 
 Objetivo: permitir preparar candidaturas individuais e empresariais em rascunho.
 
-Entregáveis futuros:
+Estado: **concluído em 2 de setembro de 2026**.
+
+Entregáveis implementados:
 
 - ações e componentes de formação;
 - candidatura, atribuição, beneficiário, participação e elegibilidade;
@@ -244,13 +246,13 @@ Entregáveis futuros:
 - cálculos derivados de tipologia e horas;
 - controlo de versão da candidatura.
 
-Concluído quando:
+Critérios verificados:
 
-- existe exatamente um titular coerente;
-- candidatura individual cria o único beneficiário correto;
-- limite empresarial configurado é aplicado;
-- participações e componentes respeitam as unicidades;
-- edição concorrente não substitui dados silenciosamente.
+- [x] Existe exatamente um titular coerente.
+- [x] Candidatura individual cria o único beneficiário correto.
+- [x] Limite empresarial configurado é aplicado.
+- [x] Participações e componentes respeitam as unicidades.
+- [x] Edição concorrente não substitui dados silenciosamente.
 
 ### IMP-04 — Documentos, checklist e snapshots
 

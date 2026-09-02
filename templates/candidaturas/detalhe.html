@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}{{ candidatura.get_tipo_display }} — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    <a href="{% url 'candidaturas:lista' %}">Candidaturas</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ candidatura.get_tipo_display }}</span>
+  </nav>
+
+  <header class="detail-header application-header">
+    <div>
+      <p class="eyebrow">{{ candidatura.get_estado_atual_display }} · versão {{ candidatura.versao }}</p>
+      <h1 class="page-title">Candidatura {{ candidatura.get_tipo_display|lower }}</h1>
+      <p class="section-copy">Titular: {{ candidatura.titular }}</p>
+    </div>
+    {% if candidatura.conjunto_regras.referencia_demonstracao %}
+      <span class="demo-label">Regras de demonstração</span>
+    {% endif %}
+  </header>
+
+  <ol class="wizard-steps" aria-label="Etapas da candidatura">
+    <li class="is-complete"><span>1</span> Tipo</li>
+    <li class="is-complete"><span>2</span> Dados</li>
+    <li class="{% if passo_beneficiarios_concluido %}is-complete{% endif %}"><span>3</span> Beneficiários</li>
+    <li class="{% if passo_formacao_concluido and passo_beneficiarios_concluido %}is-complete{% endif %}"><span>4</span> Formação</li>
+    <li class="{% if candidatura.conta_pagamento %}is-complete{% endif %}"><span>5</span> Custos</li>
+    <li class="is-future"><span>6</span> Documentos</li>
+    <li><span>7</span> Verificação</li>
+    <li class="is-future"><span>8</span> Preparar</li>
+  </ol>
+
+  <section class="application-summary" aria-label="Resumo da candidatura">
+    <dl class="definition-grid">
+      <div><dt>Tipo</dt><dd>{{ candidatura.get_tipo_display }}</dd></div>
+      <div><dt>Estado</dt><dd>{{ candidatura.get_estado_atual_display }}</dd></div>
+      <div><dt>Regras</dt><dd>{{ candidatura.conjunto_regras|default:"Por definir" }}</dd></div>
+      <div><dt>Conta</dt><dd>{% if candidatura.conta_pagamento %}{{ candidatura.conta_pagamento.iban_mascarado }}{% else %}Por indicar{% endif %}</dd></div>
+      <div><dt>Criada em</dt><dd>{{ candidatura.criado_em|date:"d/m/Y H:i" }}</dd></div>
+      <div><dt>Versão</dt><dd>{{ candidatura.versao }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="application-section" aria-labelledby="beneficiarios">
+    <div class="section-heading-inline">
+      <div>
+        <p class="eyebrow">Passo 3</p>
+        <h2 id="beneficiarios">Beneficiários</h2>
+      </div>
+    </div>
+    <div class="list-grid compact-list">
+      {% for beneficiario in beneficiarios %}
+        <article class="beneficiary-card">
+          <div>
+            <strong>{{ beneficiario.candidato }}</strong>
+            <span>{{ beneficiario.get_situacao_referencia_display }} · {{ beneficiario.get_resultado_display }}</span>
+          </div>
+          {% if beneficiario.e_titular %}<span class="status-label">Titular</span>{% endif %}
+          <div class="training-list">
+            {% for participacao in beneficiario.participacoes_formacao.all %}
+              <div class="training-item">
+                <strong>{{ participacao.acao_formacao.designacao }}</strong>
+                <span>
+                  {{ participacao.acao_formacao.entidade_formadora }} ·
+                  {{ participacao.acao_formacao.get_tipologia_display }} ·
+                  {{ participacao.horas_previstas }} h · {{ participacao.custo_declarado }} €
+                </span>
+              </div>
+            {% empty %}
+              <span class="muted-copy">Formação ainda não associada.</span>
+            {% endfor %}
+          </div>
+        </article>
+      {% empty %}
+        <div class="empty-state"><p>A candidatura ainda não tem beneficiários.</p></div>
+      {% endfor %}
+    </div>
+
+    {% if pode_editar and candidatura.tipo == "EMPRESARIAL" %}
+      <details class="editor-panel" {% if form_beneficiario.errors %}open{% endif %}>
+        <summary>Adicionar beneficiário</summary>
+        <form method="post" action="{% url 'candidaturas:adicionar_beneficiario' candidatura.public_id %}" novalidate>
+          {% csrf_token %}
+          {% include "includes/formulario.html" with form=form_beneficiario %}
+          <button class="button button-primary" type="submit">Adicionar beneficiário</button>
+        </form>
+      </details>
+    {% endif %}
+  </section>
+
+  {% if pode_editar %}
+    <section class="application-section" aria-labelledby="formacao">
+      <p class="eyebrow">Passo 4</p>
+      <h2 id="formacao">Formação</h2>
+      <details class="editor-panel" {% if form_formacao.errors %}open{% endif %}>
+        <summary>Associar nova ação</summary>
+        <form method="post" action="{% url 'candidaturas:adicionar_formacao' candidatura.public_id %}" novalidate>
+          {% csrf_token %}
+          {% include "includes/formulario.html" with form=form_formacao %}
+          <button class="button button-primary" type="submit">Guardar ação e participação</button>
+        </form>
+      </details>
+    </section>
+
+    <section class="application-section" aria-labelledby="custos">
+      <p class="eyebrow">Passo 5</p>
+      <h2 id="custos">Conta de pagamento</h2>
+      <p class="section-copy">A interface mostra apenas os últimos quatro caracteres do IBAN.</p>
+      <form class="inline-form" method="post" action="{% url 'candidaturas:definir_conta' candidatura.public_id %}" novalidate>
+        {% csrf_token %}
+        {% include "includes/formulario.html" with form=form_conta %}
+        <button class="button button-secondary" type="submit">Guardar conta</button>
+      </form>
+    </section>
+
+    <section class="application-section" aria-labelledby="verificacao">
+      <div class="section-heading-inline">
+        <div>
+          <p class="eyebrow">Passo 7</p>
+          <h2 id="verificacao">Verificação básica</h2>
+        </div>
+        <form method="post" action="{% url 'candidaturas:verificar' candidatura.public_id %}">
+          {% csrf_token %}
+          <button class="button button-secondary" type="submit">Atualizar verificações</button>
+        </form>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if verificacoes %}
+    <div class="verification-grid">
+      {% for verificacao in verificacoes %}
+        <article class="verification-card result-{{ verificacao.resultado|lower }}">
+          <span>{{ verificacao.codigo_regra }}</span>
+          <strong>{{ verificacao.get_resultado_display }}</strong>
+          <p>{{ verificacao.observacoes }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="notice-inline">
+    Este incremento prepara apenas o rascunho. Documentos, validação completa e registo da submissão externa serão acrescentados nos próximos incrementos.
+  </div>
+{% endblock %}

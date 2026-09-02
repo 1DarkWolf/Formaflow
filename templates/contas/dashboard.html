@@ -7,7 +7,7 @@
     <div>
       <p class="eyebrow">Sessão ativa</p>
       <h1 id="titulo-pagina" class="page-title">Olá, {{ user.get_short_name }}</h1>
-      <p class="section-copy">A sua identidade e os contextos de organização estão preparados. As candidaturas entram no próximo incremento.</p>
+      <p class="section-copy">Crie e retome candidaturas em rascunho dentro do seu âmbito pessoal ou empresarial.</p>
     </div>
     <div class="identity-card">
       <span>Email</span>
@@ -20,9 +20,9 @@
   <section class="card-grid" aria-label="Ações da conta">
     <article class="card">
       <span class="card-number" aria-hidden="true">01</span>
-      <h2 class="card-title">Segurança</h2>
-      <p>Altere a sua palavra-passe sem terminar a sessão atual.</p>
-      <a class="text-link" href="{% url 'contas:password_change' %}">Alterar palavra-passe</a>
+      <h2 class="card-title">Candidaturas</h2>
+      <p>Prepare beneficiários, formação, custos e verificações por etapas.</p>
+      <a class="text-link" href="{% url 'candidaturas:lista' %}">Consultar candidaturas</a>
     </article>
     <article class="card">
       <span class="card-number" aria-hidden="true">02</span>
@@ -37,4 +37,7 @@
       <a class="text-link" href="{% url 'regras:lista_conjuntos' %}">Consultar regras</a>
     </article>
   </section>
+  <p class="dashboard-secondary-action">
+    Precisa de atualizar o acesso? <a class="text-link" href="{% url 'contas:password_change' %}">Alterar palavra-passe</a>
+  </p>
 {% endblock %}

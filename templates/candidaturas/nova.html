@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Nova candidatura — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    <a href="{% url 'candidaturas:lista' %}">Candidaturas</a>
+    <span aria-hidden="true">/</span>
+    <span>Nova</span>
+  </nav>
+
+  <div class="auth-layout">
+    <section class="auth-panel" aria-labelledby="titulo-pagina">
+      <p class="eyebrow">Passo 1 de 8 · Tipo e titular</p>
+      <h1 id="titulo-pagina" class="page-title">Nova candidatura</h1>
+      <p class="section-copy">
+        Escolha o titular e a versão de regras. O processo será guardado como rascunho.
+      </p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "includes/formulario.html" %}
+        <button class="button button-primary" type="submit">Criar rascunho</button>
+      </form>
+    </section>
+    <aside class="auth-aside">
+      <p class="eyebrow">Antes de continuar</p>
+      <h2>Referências atuais</h2>
+      <p>
+        Uma candidatura individual exige uma situação profissional vigente. Uma candidatura
+        empresarial só pode usar uma empresa que a sua conta esteja autorizada a gerir.
+      </p>
+    </aside>
+  </div>
+{% endblock %}

@@ -48,6 +48,23 @@ def empresas_visiveis_por(user, *, no_momento=None):
     ).distinct()
 
 
+def empresas_geridas_por(user, *, no_momento=None):
+    if not user or not user.is_authenticated or not user.is_active:
+        return Empresa.objects.none()
+    if utilizador_e_administrador(user):
+        return Empresa.objects.all()
+    moment = no_momento or timezone.now()
+    return Empresa.objects.filter(
+        associacoes__in=AssociacaoEmpresa.objects.vigentes(moment).filter(
+            utilizador=user,
+            papel__in=(
+                AssociacaoEmpresa.Papel.GESTOR,
+                AssociacaoEmpresa.Papel.RECURSOS_HUMANOS,
+            ),
+        )
+    ).distinct()
+
+
 def utilizador_pode_consultar_detalhes(user, empresa, *, no_momento=None):
     if not user or not user.is_authenticated or not user.is_active:
         return False

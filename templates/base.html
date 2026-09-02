@@ -18,6 +18,7 @@
         </a>
         <div class="header-actions">
           {% if user.is_authenticated %}
+            <a class="header-link optional-nav" href="{% url 'candidaturas:lista' %}">Candidaturas</a>
             <a class="header-link optional-nav" href="{% url 'organizacoes:lista_empresas' %}">Empresas</a>
             <a class="header-link optional-nav" href="{% url 'regras:lista_conjuntos' %}">Regras</a>
             <a class="header-link" href="{% url 'contas:dashboard' %}">{{ user.get_short_name }}</a>
@@ -28,7 +29,7 @@
           {% else %}
             <a class="header-link" href="{% url 'contas:login' %}">Iniciar sessão</a>
           {% endif %}
-          <span class="phase-badge">IMP-02</span>
+          <span class="phase-badge">IMP-03</span>
         </div>
       </div>
     </header>

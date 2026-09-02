@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     "apps.core.apps.CoreConfig",
     "apps.organizacoes.apps.OrganizacoesConfig",
     "apps.regras.apps.RegrasConfig",
+    "apps.formacoes.apps.FormacoesConfig",
+    "apps.candidaturas.apps.CandidaturasConfig",
 ]
 
 MIDDLEWARE = [

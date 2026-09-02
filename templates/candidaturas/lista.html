@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Candidaturas — Forma Flow{% endblock %}
+
+{% block content %}
+  <header class="section-header">
+    <div>
+      <p class="eyebrow">Processos no seu âmbito</p>
+      <h1 class="page-title">Candidaturas</h1>
+      <p class="section-copy">Consulte os rascunhos pessoais, empresariais ou atribuídos à sua conta.</p>
+    </div>
+    <a class="button button-primary" href="{% url 'candidaturas:nova' %}">Nova candidatura</a>
+  </header>
+
+  <div class="list-grid">
+    {% for candidatura in candidaturas %}
+      <article class="list-card">
+        <div>
+          <span class="status-label">{{ candidatura.get_estado_atual_display }}</span>
+          <h2>{{ candidatura.get_tipo_display }}</h2>
+          <p>{{ candidatura.titular }} · versão {{ candidatura.versao }}</p>
+        </div>
+        <a class="text-link" href="{% url 'candidaturas:detalhe' candidatura.public_id %}">Abrir candidatura</a>
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        <h2>Ainda não existem candidaturas visíveis</h2>
+        <p>Crie um rascunho para iniciar a preparação por etapas.</p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

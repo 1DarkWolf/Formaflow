@@ -4,9 +4,9 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação concluiu os incrementos `IMP-00 — Preparar a base do projeto`, `IMP-01 — Identidade e autenticação` e `IMP-02 — Organizações, regras e dados de referência`.
+A implementação concluiu os incrementos `IMP-00 — Preparar a base do projeto`, `IMP-01 — Identidade e autenticação`, `IMP-02 — Organizações, regras e dados de referência` e `IMP-03 — Formação e núcleo da candidatura`.
 
-Estão disponíveis autenticação por email, perfis de candidato, empresas e respetivos âmbitos de acesso, vínculos laborais, entidades formadoras, contas de pagamento com IBAN cifrado, regras publicadas imutáveis, feriados, tipos documentais e administração técnica. O próximo incremento é o `IMP-03`, dedicado à formação e ao núcleo da candidatura.
+Estão disponíveis autenticação por email, organizações com âmbito de acesso, contas de pagamento protegidas, regras imutáveis, ações e componentes de formação e candidaturas individuais ou empresariais preparadas por etapas. Beneficiários, participações, verificações básicas e edição concorrente estão incluídos. O próximo incremento é o `IMP-04`, dedicado aos documentos, checklist e snapshots.
 
 ## Requisitos
 
@@ -36,7 +36,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-O comando `carregar_dados_demonstracao` é idempotente e cria apenas referências claramente fictícias: uma empresa, uma entidade formadora, parâmetros, tipos documentais e feriados. O conjunto de regras fica em rascunho e deve ser revisto antes de ser publicado. O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
+O comando `carregar_dados_demonstracao` é idempotente e cria apenas referências claramente fictícias: uma empresa, uma entidade formadora, parâmetros, tipos documentais e feriados. O conjunto de regras fica em rascunho e deve ser revisto e publicado em `/regras/` antes de criar uma candidatura. O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
 
 Em desenvolvimento, as chaves de proteção de dados são derivadas da chave do Django quando `DATA_ENCRYPTION_KEY` e `DATA_HASH_KEY` ficam vazias. Em produção, defina valores independentes e secretos. Pode gerar valores adequados com:
 
@@ -95,6 +95,8 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17.
 - `/conta/entrar/` e `/conta/sair/` — início e fim de sessão;
 - `/conta/recuperar/` — recuperação de palavra-passe;
 - `/conta/painel/` — painel autenticado;
+- `/candidaturas/` — candidaturas visíveis e assistente de preparação;
+- `/candidaturas/nova/` — criação de rascunho individual ou empresarial;
 - `/organizacoes/empresas/` — empresas visíveis no âmbito do utilizador;
 - `/regras/` — versões de regras visíveis e publicação autorizada;
 - `/admin/` — administração técnica para contas autorizadas.

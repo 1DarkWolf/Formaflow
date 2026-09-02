@@ -8,8 +8,8 @@ class HomeViewTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Forma Flow")
-        self.assertContains(response, "Organizações e regras sob controlo")
-        self.assertContains(response, "IMP-03 — Formação e candidatura")
+        self.assertContains(response, "Candidaturas e formação num só fluxo")
+        self.assertContains(response, "IMP-04 — Documentos e checklist")
 
     def test_home_rejects_unsafe_methods(self):
         response = self.client.post(reverse("core:home"))

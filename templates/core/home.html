@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Organizações e regras — Forma Flow{% endblock %}
+{% block title %}Candidaturas e formação — Forma Flow{% endblock %}
 
 {% block content %}
   <section class="hero" aria-labelledby="titulo-pagina">
     <div>
-      <p class="eyebrow">Base organizacional preparada</p>
-      <h1 id="titulo-pagina">Organizações e regras sob controlo</h1>
+      <p class="eyebrow">Preparação por etapas</p>
+      <h1 id="titulo-pagina">Candidaturas e formação num só fluxo</h1>
       <p class="hero-copy">
-        Empresas, vínculos laborais, entidades formadoras e regras versionadas já têm
-        modelos próprios, acesso por âmbito e proteção para os dados de pagamento.
+        O Forma Flow já cria rascunhos individuais e empresariais, valida beneficiários,
+        organiza ações de formação e protege alterações feitas em sessões concorrentes.
       </p>
       <div class="actions">
         {% if user.is_authenticated %}
@@ -23,8 +23,8 @@
     <div class="status-panel" aria-label="Estado da implementação">
       <span class="status-dot" aria-hidden="true"></span>
       <div>
-        <strong>Incremento 02 operacional</strong>
-        <span>Âmbitos isolados · regras imutáveis · IBAN cifrado</span>
+        <strong>Incremento 03 operacional</strong>
+        <span>Rascunhos · beneficiários · formação · custos</span>
       </div>
     </div>
   </section>
@@ -34,18 +34,18 @@
     <div class="card-grid">
       <article class="card">
         <span class="card-number" aria-hidden="true">01</span>
-        <h3>Organizações isoladas</h3>
-        <p>Cada gestor consulta apenas as empresas associadas ao seu âmbito atual.</p>
+        <h3>Dois tipos de candidatura</h3>
+        <p>O titular e os beneficiários mantêm-se coerentes nos percursos individual e empresarial.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">02</span>
-        <h3>Regras versionadas</h3>
-        <p>Uma versão publicada fica imutável e é escolhida pela data de referência.</p>
+        <h3>Formação estruturada</h3>
+        <p>Componentes CNQ e extra-CNQ determinam automaticamente a tipologia e as horas.</p>
       </article>
       <article class="card">
         <span class="card-number" aria-hidden="true">03</span>
-        <h3>Pagamento protegido</h3>
-        <p>O IBAN é cifrado e aparece na interface apenas com os últimos quatro caracteres.</p>
+        <h3>Edição segura</h3>
+        <p>Uma versão desatualizada recebe conflito e nunca substitui alterações mais recentes.</p>
       </article>
     </div>
   </section>
@@ -53,9 +53,9 @@
   <section class="next-step" aria-labelledby="proximo-passo">
     <div>
       <p class="eyebrow">Próximo incremento</p>
-      <h2 id="proximo-passo">IMP-03 — Formação e candidatura</h2>
-      <p>O próximo incremento permitirá preparar candidaturas individuais e empresariais.</p>
+      <h2 id="proximo-passo">IMP-04 — Documentos e checklist</h2>
+      <p>O próximo incremento acrescentará ficheiros privados, versões e snapshots imutáveis.</p>
     </div>
-    <span class="next-code">03 / 09</span>
+    <span class="next-code">04 / 09</span>
   </section>
 {% endblock %}
