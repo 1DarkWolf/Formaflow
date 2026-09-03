@@ -130,3 +130,23 @@ class PerfilCandidato(models.Model):
         self.nacionalidade = self.nacionalidade.strip().upper()
         self.pais = self.pais.strip().upper()
         self.telefone = self.telefone.strip()
+
+
+class TentativaAutenticacao(models.Model):
+    """Aggregated failed logins keyed by a non-reversible identifier and address."""
+
+    chave = models.CharField(max_length=64, unique=True, editable=False)
+    falhas = models.PositiveSmallIntegerField(default=0, editable=False)
+    janela_iniciada_em = models.DateTimeField(editable=False)
+    bloqueado_ate = models.DateTimeField(blank=True, null=True, editable=False)
+    atualizado_em = models.DateTimeField(auto_now=True, editable=False)
+
+    class Meta:
+        verbose_name = "tentativa de autenticação"
+        verbose_name_plural = "tentativas de autenticação"
+        indexes = [
+            models.Index(fields=("bloqueado_ate",), name="contas_login_bloqueio_idx"),
+        ]
+
+    def __str__(self):
+        return f"Tentativas {self.chave[:8]}… ({self.falhas})"

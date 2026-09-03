@@ -306,6 +306,8 @@ Critérios verificados:
 
 Objetivo: completar o percurso administrativo posterior à aprovação.
 
+Estado: **concluído em 3 de setembro de 2026**.
+
 Entregáveis implementados:
 
 - transições `TR-013` a `TR-023`;
@@ -326,6 +328,8 @@ Concluído quando:
 ### IMP-07 — Financeiro
 
 Objetivo: separar estimativas, aprovações, pagamentos e restituições.
+
+Estado: **concluído em 3 de setembro de 2026**.
 
 Entregáveis concluídos:
 
@@ -370,23 +374,25 @@ Concluído quando:
 
 Objetivo: preparar uma entrega reproduzível da PAP.
 
-Entregáveis futuros:
+Estado: **implementação técnica concluída em 3 de setembro de 2026; falta sincronizar os artefactos externos da PAP**.
 
-- revisão integral de segurança e permissões;
-- teste de instalação limpa e migrações;
-- dados fictícios de demonstração;
-- testes do percurso crítico;
-- backup e restauro ensaiados;
-- documentação técnica, instalação e utilizador atualizada;
-- configuração do ambiente de demonstração ou publicação.
+Entregáveis implementados:
 
-Concluído quando:
+- [x] revisão integral de segurança e permissões;
+- [x] teste de instalação limpa e migrações;
+- [x] dados fictícios de demonstração;
+- [x] testes do percurso crítico;
+- [x] backup e restauro automatizados e incluídos no ensaio PostgreSQL do CI;
+- [x] documentação técnica, instalação e utilizador atualizada;
+- [x] configuração do ambiente de demonstração e publicação.
 
-- todas as verificações automatizadas passam;
-- `check --deploy` não apresenta bloqueios no ambiente final;
-- o percurso de demonstração funciona sem Internet externa;
-- existe procedimento de recuperação;
-- relatório e apresentação correspondem ao sistema entregue.
+Critérios verificados:
+
+- [x] todas as verificações automatizadas passam;
+- [x] `check --deploy --fail-level WARNING` não apresenta bloqueios;
+- [x] o percurso de demonstração funciona sem Internet externa;
+- [x] existe procedimento de recuperação documentado e automatizado;
+- [ ] o relatório e a apresentação externos são atualizados a partir do plano de demonstração da entrega.
 
 ## 7. Ordem de pedidos depois da autorização
 
@@ -496,8 +502,8 @@ A autorização de G0 não autoriza automaticamente G1 a G4.
 - [x] Estratégias de segurança, testes e ambientes definidas.
 - [x] Autorização explícita para começar código.
 - [x] Runtime Python 3.12.13 e dependências iniciais confirmados.
-- [ ] Forma de executar PostgreSQL no desenvolvimento confirmada.
+- [x] Forma de executar PostgreSQL confirmada com Docker Compose e CI.
 
 ## 14. Resultado
 
-O projeto pode avançar de forma controlada, começando por `IMP-00` quando existir autorização. Cada incremento tem fronteira, resultado verificável e compromisso de teste e commit, evitando uma implementação única demasiado grande para rever ou demonstrar.
+Os incrementos `IMP-00` a `IMP-09` estão implementados. O projeto dispõe de fronteiras documentadas, testes automatizados, demonstração offline, configuração reproduzível e compromisso de um commit validado por incremento.

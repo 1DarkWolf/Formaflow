@@ -3,6 +3,11 @@
 from django.contrib import admin
 from django.urls import include, path
 
+handler400 = "apps.core.views.erro_400"
+handler403 = "apps.core.views.erro_403"
+handler404 = "apps.core.views.erro_404"
+handler500 = "apps.core.views.erro_500"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("conta/", include("apps.contas.urls")),

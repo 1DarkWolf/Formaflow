@@ -1,6 +1,7 @@
 """Automated test settings."""
 
 import os
+from pathlib import Path
 
 from .base import *  # noqa: F403
 from .base import BASE_DIR, postgres_database
@@ -16,13 +17,13 @@ else:
     DATABASES = {  # noqa: F405
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
+            "NAME": os.getenv("DJANGO_TEST_SQLITE_PATH", ":memory:"),
         }
     }
 
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-MEDIA_ROOT = BASE_DIR / "tmp" / "test_uploads"
+MEDIA_ROOT = Path(os.getenv("DJANGO_TEST_UPLOAD_ROOT", BASE_DIR / "tmp" / "test_uploads"))
 
 STORAGES = {  # noqa: F405
     "default": {

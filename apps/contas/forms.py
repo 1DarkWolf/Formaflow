@@ -9,6 +9,11 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from .constants import GRUPO_CANDIDATO
+from .login_security import (
+    autenticacao_bloqueada,
+    limpar_falhas_autenticacao,
+    registar_falha_autenticacao,
+)
 from .models import PerfilCandidato, Utilizador
 from .validators import normalizar_nif, validar_nif
 
@@ -29,6 +34,19 @@ class FormularioAutenticacao(AuthenticationForm):
             }
         ),
     )
+
+    def clean(self):
+        identifier = self.data.get("username", "")
+        if autenticacao_bloqueada(request=self.request, identifier=identifier):
+            raise self.get_invalid_login_error()
+        try:
+            cleaned_data = super().clean()
+        except ValidationError:
+            if identifier and self.data.get("password"):
+                registar_falha_autenticacao(request=self.request, identifier=identifier)
+            raise
+        limpar_falhas_autenticacao(request=self.request, identifier=identifier)
+        return cleaned_data
 
 
 class FormularioRegistoCandidato(UserCreationForm):

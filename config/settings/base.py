@@ -69,6 +69,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "apps.core.middleware.CabecalhosSegurancaMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -112,6 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 12},
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -127,10 +129,10 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = Path(os.getenv("DJANGO_STATIC_ROOT", BASE_DIR / "staticfiles"))
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-PRIVATE_UPLOAD_ROOT = BASE_DIR / "private_uploads"
+PRIVATE_UPLOAD_ROOT = Path(os.getenv("PRIVATE_UPLOAD_ROOT", BASE_DIR / "private_uploads"))
 MEDIA_ROOT = PRIVATE_UPLOAD_ROOT
 MEDIA_URL = "/private-media-not-served-directly/"
 
@@ -145,6 +147,12 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGIN_MAX_ATTEMPTS = int(os.getenv("LOGIN_MAX_ATTEMPTS", "5"))
+LOGIN_ATTEMPT_WINDOW_SECONDS = int(os.getenv("LOGIN_ATTEMPT_WINDOW_SECONDS", "900"))
+LOGIN_LOCK_SECONDS = int(os.getenv("LOGIN_LOCK_SECONDS", "900"))
+FILE_UPLOAD_PERMISSIONS = 0o600
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o700
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Forma Flow <noreply@example.test>")

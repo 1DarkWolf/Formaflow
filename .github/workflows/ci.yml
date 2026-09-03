@@ -1,0 +1,109 @@
+name: Validar Forma Flow
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality-and-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_DB: formaflow
+          POSTGRES_USER: formaflow
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U formaflow -d formaflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DJANGO_TEST_DATABASE_ENGINE: postgresql
+      POSTGRES_DB: formaflow
+      POSTGRES_USER: formaflow
+      POSTGRES_PASSWORD: ci-only-password
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5432"
+      DATA_ENCRYPTION_KEY: qwmQmVeK0tih6t3tmWmwHLGd0v4m6fRfIZ_8ZAd7gwQ=
+      DATA_HASH_KEY: ci-only-independent-hash-key
+      BACKUP_ENCRYPTION_KEY: qwmQmVeK0tih6t3tmWmwHLGd0v4m6fRfIZ_8ZAd7gwQ=
+      FORMAFLOW_DEMO_PASSWORD: Demonstracao-CI-2026-Segura!
+
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements/base.txt
+            requirements/development.txt
+            requirements/production.txt
+
+      - name: Instalar dependências
+        run: python -m pip install -r requirements/development.txt -r requirements/production.txt
+
+      - name: Validar dependências e código
+        run: |
+          python -m pip check
+          python -m ruff check .
+          python -m ruff format --check .
+
+      - name: Validar Django, produção e migrações
+        env:
+          DJANGO_SECRET_KEY: ci-only-production-check-secret-key-with-more-than-fifty-characters
+          DJANGO_ALLOWED_HOSTS: example.test
+          DJANGO_CSRF_TRUSTED_ORIGINS: https://example.test
+          POSTGRES_SSLMODE: disable
+        run: |
+          python manage.py check --settings=config.settings.test
+          python manage.py check --deploy --fail-level WARNING --settings=config.settings.production
+          python manage.py makemigrations --check --dry-run --settings=config.settings.test
+          python manage.py migrate --noinput --settings=config.settings.test
+
+      - name: Ensaiar dados offline e alertas
+        run: |
+          python manage.py carregar_cenario_demonstracao --settings=config.settings.test
+          python manage.py carregar_cenario_demonstracao --settings=config.settings.test
+          python manage.py processar_alertas --settings=config.settings.test
+
+      - name: Executar testes e cobertura
+        run: |
+          python -m coverage run manage.py test --settings=config.settings.test
+          python -m coverage report --fail-under=80
+          python -m unittest discover -s scripts/tests -v
+
+      - name: Instalar cliente PostgreSQL 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl --fail --silent --show-error -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client-17
+
+      - name: Ensaiar backup cifrado e restauro isolado
+        env:
+          PGPASSWORD: ci-only-password
+        run: |
+          mkdir -p private_uploads/demo
+          printf '%s' '%PDF-1.4 ficticio' > private_uploads/demo/comprovativo.pdf
+          python scripts/backup_restore.py backup --output /tmp/formaflow.ffbackup
+          createdb --host=127.0.0.1 --username=formaflow formaflow_restore
+          python scripts/backup_restore.py restore --input /tmp/formaflow.ffbackup --target-database formaflow_restore --uploads-target /tmp/formaflow-restored-files
+          POSTGRES_DB=formaflow_restore python manage.py shell --settings=config.settings.local -c "from apps.candidaturas.models import Candidatura; assert Candidatura.objects.filter(referencia_externa__startswith='DEMO-').count() == 2"
+          cmp private_uploads/demo/comprovativo.pdf /tmp/formaflow-restored-files/demo/comprovativo.pdf
+
+      - name: Validar imagem de publicação
+        run: docker build --tag formaflow:${{ github.sha }} .

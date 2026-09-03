@@ -9,7 +9,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from apps.contas.constants import GRUPO_CANDIDATO
-from apps.contas.models import PerfilCandidato, Utilizador
+from apps.contas.models import PerfilCandidato, TentativaAutenticacao, Utilizador
 from apps.contas.tokens import token_ativacao_conta
 
 PASSWORD = "Segura!2026Projeto"
@@ -61,6 +61,35 @@ class AuthenticationTests(TestCase):
         error = response.context["form"].errors.as_data()[NON_FIELD_ERRORS][0]
         self.assertEqual(error.code, "invalid_login")
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_repeated_failures_temporarily_block_even_the_correct_password(self):
+        for _attempt in range(5):
+            self.client.post(
+                reverse("contas:login"),
+                {"username": self.active_user.email, "password": "incorreta"},
+            )
+
+        response = self.client.post(
+            reverse("contas:login"),
+            {"username": self.active_user.email, "password": PASSWORD},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertTrue(TentativaAutenticacao.objects.filter(bloqueado_ate__isnull=False).exists())
+
+    def test_successful_login_clears_previous_failures(self):
+        self.client.post(
+            reverse("contas:login"),
+            {"username": self.active_user.email, "password": "incorreta"},
+        )
+
+        self.client.post(
+            reverse("contas:login"),
+            {"username": self.active_user.email, "password": PASSWORD},
+        )
+
+        self.assertFalse(TentativaAutenticacao.objects.exists())
 
     def test_dashboard_requires_authentication(self):
         response = self.client.get(reverse("contas:dashboard"))

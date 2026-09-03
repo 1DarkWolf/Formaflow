@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import FormularioAlteracaoUtilizador, FormularioCriacaoUtilizador
-from .models import PerfilCandidato, Utilizador
+from .models import PerfilCandidato, TentativaAutenticacao, Utilizador
 
 
 @admin.register(Utilizador)
@@ -65,3 +65,18 @@ class PerfilCandidatoAdmin(admin.ModelAdmin):
         "nif",
     )
     readonly_fields = ("criado_em", "atualizado_em")
+
+
+@admin.register(TentativaAutenticacao)
+class TentativaAutenticacaoAdmin(admin.ModelAdmin):
+    list_display = ("chave_abreviada", "falhas", "bloqueado_ate", "atualizado_em")
+    readonly_fields = ("chave", "falhas", "janela_iniciada_em", "bloqueado_ate", "atualizado_em")
+
+    def chave_abreviada(self, obj):
+        return f"{obj.chave[:12]}…"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

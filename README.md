@@ -4,17 +4,18 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação concluiu os incrementos `IMP-00` a `IMP-08`, desde a base do projeto até ao painel, alertas e relatórios do MVP.
+A implementação concluiu os incrementos `IMP-00` a `IMP-09`, desde a base do projeto até à robustez, demonstração e publicação reproduzível do MVP.
 
-Estão disponíveis autenticação por email, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-023`, termo de aceitação, execução das formações, snapshots, prazos, suspensões, pedidos finais, decisões por beneficiário, revogação e correções auditáveis sem executar decisões no Iefponline. O circuito financeiro separa estimativas, decisões oficiais, movimentos efetivos e restituições. O painel é adaptado ao perfil, os avisos de prazo são idempotentes e a exportação CSV autorizada deixa um registo imutável. O próximo incremento é o `IMP-09`, dedicado à robustez, demonstração e publicação.
+Estão disponíveis autenticação por email com proteção contra tentativas repetidas, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-023`, termo de aceitação, execução das formações, snapshots, prazos, suspensões, pedidos finais, decisões por beneficiário, revogação e correções auditáveis sem executar decisões no Iefponline. O circuito financeiro separa estimativas, decisões oficiais, movimentos efetivos e restituições. O painel é adaptado ao perfil, os avisos de prazo são idempotentes e a exportação CSV autorizada deixa um registo imutável. A entrega inclui cenário fictício offline, contentores, verificações de produção e backup PostgreSQL cifrado.
 
 ## Requisitos
 
 - Python 3.12;
 - PostgreSQL 17 para desenvolvimento completo;
-- Git.
+- Git;
+- Docker com Compose, opcional para a demonstração em contentores.
 
-O ambiente usado para preparar o projeto tem Python 3.12.13, mas ainda não possui PostgreSQL instalado. O modo SQLite descrito abaixo serve apenas para executar a estrutura inicial; os testes de integração do domínio usarão PostgreSQL.
+O modo SQLite descrito abaixo serve para experimentação local e para a verificação offline. A integração final, o backup e o restauro usam PostgreSQL 17 no workflow automatizado.
 
 ## Instalação local no Windows
 
@@ -31,12 +32,18 @@ Depois de criar a base e o utilizador PostgreSQL, ajuste as variáveis `POSTGRES
 
 ```powershell
 python manage.py migrate
-python manage.py carregar_dados_demonstracao
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
-O comando `carregar_dados_demonstracao` é idempotente e cria apenas referências claramente fictícias: uma empresa, uma entidade formadora, parâmetros, tipos documentais e feriados. O conjunto de regras fica em rascunho e deve ser revisto e publicado em `/regras/` antes de criar uma candidatura. O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
+O comando `carregar_dados_demonstracao` continua disponível para criar apenas os catálogos. Para preparar o percurso completo da PAP, forneça uma palavra-passe temporária forte e execute:
+
+```powershell
+$env:FORMAFLOW_DEMO_PASSWORD = Read-Host "Palavra-passe temporária"
+python manage.py carregar_cenario_demonstracao
+```
+
+O cenário completo é idempotente e usa apenas referências fictícias e endereços `example.test`. O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
 
 Para atualizar diariamente os avisos de prazo, execute ou agende:
 
@@ -75,10 +82,12 @@ python -m ruff format --check .
 python manage.py check
 python manage.py test --settings=config.settings.test
 python -m coverage run manage.py test --settings=config.settings.test
-python -m coverage report
+python -m coverage report --fail-under=80
+python -m unittest discover -s scripts/tests -v
+python scripts/verify_release.py
 ```
 
-O workflow do GitHub repete estas verificações com PostgreSQL 17.
+O workflow do GitHub repete estas verificações com PostgreSQL 17, ensaia o backup/restauro cifrado e constrói a imagem Docker.
 
 ## Documentação
 
@@ -94,6 +103,12 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17.
   - [Inventário de ecrãs e wireframes](docs/planeamento/07-inventario-e-wireframes.md)
 - [Tópico 08 - Testes, validação e demonstração](docs/planeamento/08-plano-de-testes.md)
   - [Catálogo de casos de teste](docs/planeamento/08-catalogo-casos-teste.md)
+- [Manual do utilizador](docs/operacao/manual-utilizador.md)
+- [Instalação e publicação](docs/operacao/instalacao-publicacao.md)
+- [Backup e restauro](docs/operacao/backup-restauro.md)
+- [Plano de demonstração](docs/operacao/plano-demonstracao.md)
+- [Revisão de segurança](docs/operacao/revisao-seguranca.md)
+- [Relatório de validação](docs/operacao/relatorio-validacao.md)
 
 ## Endpoints disponíveis
 

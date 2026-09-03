@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Pedido não concluído — Forma Flow{% endblock %}
+
+{% block content %}
+  <section class="notice-card">
+    <p class="eyebrow">Código {{ codigo }}</p>
+    <h1 class="page-title">Não foi possível concluir este pedido</h1>
+    {% if codigo == 403 %}
+      <p>Não tem autorização para realizar esta operação.</p>
+    {% elif codigo == 404 %}
+      <p>A página pedida não existe ou não está disponível no seu âmbito.</p>
+    {% else %}
+      <p>O pedido não foi concluído. Tente novamente ou contacte o responsável técnico.</p>
+    {% endif %}
+    <a class="button button-primary" href="{% url 'core:home' %}">Voltar ao início</a>
+  </section>
+{% endblock %}

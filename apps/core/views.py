@@ -15,3 +15,19 @@ def home(request):
 def health(request):
     """Return a minimal liveness response without exposing internals."""
     return JsonResponse({"service": "formaflow", "status": "ok"})
+
+
+def erro_400(request, exception):
+    return render(request, "core/erro.html", {"codigo": 400}, status=400)
+
+
+def erro_403(request, exception):
+    return render(request, "core/erro.html", {"codigo": 403}, status=403)
+
+
+def erro_404(request, exception):
+    return render(request, "core/erro.html", {"codigo": 404}, status=404)
+
+
+def erro_500(request):
+    return render(request, "core/erro.html", {"codigo": 500}, status=500)
