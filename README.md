@@ -4,9 +4,9 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação concluiu os incrementos `IMP-00` a `IMP-06`, desde a base do projeto até ao encerramento administrativo da candidatura.
+A implementação concluiu os incrementos `IMP-00` a `IMP-07`, desde a base do projeto até ao circuito financeiro da candidatura.
 
-Estão disponíveis autenticação por email, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-023`, termo de aceitação, execução das formações, snapshots, prazos, suspensões, pedidos finais, decisões por beneficiário, revogação e correções auditáveis sem executar decisões no Iefponline. O próximo incremento é o `IMP-07`, dedicado ao circuito financeiro detalhado.
+Estão disponíveis autenticação por email, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-023`, termo de aceitação, execução das formações, snapshots, prazos, suspensões, pedidos finais, decisões por beneficiário, revogação e correções auditáveis sem executar decisões no Iefponline. O circuito financeiro separa estimativas, decisões oficiais, movimentos efetivos e restituições. O próximo incremento é o `IMP-08`, dedicado ao dashboard, alertas e relatórios do MVP.
 
 ## Requisitos
 

@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "apps.candidaturas.apps.CandidaturasConfig",
     "apps.documentos.apps.DocumentosConfig",
     "apps.workflow.apps.WorkflowConfig",
+    "apps.financeiro.apps.FinanceiroConfig",
 ]
 
 MIDDLEWARE = [

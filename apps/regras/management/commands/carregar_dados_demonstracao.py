@@ -73,6 +73,27 @@ PARAMETROS = (
         "euros",
     ),
     (
+        "CFG-IAS",
+        "Indexante dos Apoios Sociais de referência",
+        ParametroRegra.TipoValor.DECIMAL,
+        "438.81",
+        "euros",
+    ),
+    (
+        "CFG-BOLSA-IAS-PERCENTAGEM",
+        "Percentagem do IAS para bolsa de formação",
+        ParametroRegra.TipoValor.DECIMAL,
+        35,
+        "percentagem",
+    ),
+    (
+        "CFG-REFEICAO-DIARIO",
+        "Subsídio diário de refeição de referência",
+        ParametroRegra.TipoValor.DECIMAL,
+        "4.77",
+        "euros_dia",
+    ),
+    (
         "CFG-EMPRESA-BENEFICIARIOS",
         "Trabalhadores por candidatura",
         ParametroRegra.TipoValor.INTEIRO,

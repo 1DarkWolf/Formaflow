@@ -22,6 +22,11 @@ from apps.documentos.services import (
     validar_versao,
 )
 from apps.documentos.tests.factories import DocumentFixtureMixin, pdf_upload
+from apps.financeiro.models import ApoioFinanceiro
+from apps.financeiro.services import (
+    calcular_estimativas_candidatura,
+    confirmar_valores_oficiais,
+)
 from apps.formacoes.models import AcaoFormacao, ComponenteFormacao
 from apps.organizacoes.models import EntidadeFormadora, VinculoLaboral
 from apps.organizacoes.services import criar_conta_pagamento
@@ -80,6 +85,62 @@ class WorkflowServiceTests(DocumentFixtureMixin, TestCase):
                     ("CFG-PRIMEIRA-PRESTACAO", 5, "dias úteis"),
                     ("CFG-REMANESCENTE", 10, "dias úteis"),
                     ("CFG-ENCERRAMENTO", 2, "meses"),
+                )
+            ]
+        )
+        ParametroRegra.objects.bulk_create(
+            [
+                ParametroRegra(
+                    conjunto_regras=self.rules,
+                    codigo=code,
+                    designacao=code,
+                    tipo_valor=value_type,
+                    valor=value,
+                    unidade=unit,
+                )
+                for code, value_type, value, unit in (
+                    (
+                        "CFG-JANELA-APOIO",
+                        ParametroRegra.TipoValor.INTEIRO,
+                        2,
+                        "anos",
+                    ),
+                    (
+                        "CFG-EMP-HORAS",
+                        ParametroRegra.TipoValor.INTEIRO,
+                        50,
+                        "horas",
+                    ),
+                    (
+                        "CFG-EMP-VALOR-HORA",
+                        ParametroRegra.TipoValor.DECIMAL,
+                        4,
+                        "euros/hora",
+                    ),
+                    (
+                        "CFG-EMP-MONTANTE",
+                        ParametroRegra.TipoValor.DECIMAL,
+                        175,
+                        "euros",
+                    ),
+                    (
+                        "CFG-EMP-PERCENTAGEM",
+                        ParametroRegra.TipoValor.DECIMAL,
+                        90,
+                        "percentagem",
+                    ),
+                    (
+                        "CFG-DESEMP-HORAS",
+                        ParametroRegra.TipoValor.INTEIRO,
+                        150,
+                        "horas",
+                    ),
+                    (
+                        "CFG-DESEMP-MONTANTE",
+                        ParametroRegra.TipoValor.DECIMAL,
+                        500,
+                        "euros",
+                    ),
                 )
             ]
         )
@@ -950,6 +1011,23 @@ class WorkflowServiceTests(DocumentFixtureMixin, TestCase):
             confirmacao=True,
         )
         self.application.refresh_from_db()
+        calcular_estimativas_candidatura(
+            candidatura_id=self.application.pk,
+            utilizador=self.manager,
+            usar_valores_finais=True,
+        )
+        for support in ApoioFinanceiro.objects.filter(
+            beneficiario__candidatura=self.application,
+            tipo=ApoioFinanceiro.Tipo.FORMACAO,
+        ):
+            confirmar_valores_oficiais(
+                apoio_id=support.pk,
+                utilizador=self.manager,
+                valor_aprovado=support.valor_estimado,
+                valor_final=support.valor_estimado,
+                confirmado_em=self.base_time + timedelta(days=10),
+                referencia_externa="DEC-FIN-001",
+            )
         conclusion = registar_conclusao_encerramento(
             candidatura_id=self.application.pk,
             utilizador=self.manager,
@@ -979,8 +1057,8 @@ class WorkflowServiceTests(DocumentFixtureMixin, TestCase):
             chave_idempotencia="regularizacao-confirmada",
             efetiva_em=self.base_time + timedelta(days=12),
             regularizacao_confirmada=True,
-            referencia_externa="PAG-001",
-            evidencia=self.evidence,
+            sem_pagamento=True,
+            motivo="Decisão oficial sem pagamentos adicionais.",
             confirmacao=True,
         )
         self.application.refresh_from_db()

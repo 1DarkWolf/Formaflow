@@ -538,6 +538,15 @@ def aplicar_transicao(
         )
     if code in {"TR-005", "TR-012", "TR-014", "TR-022"}:
         _cancelar_operacional(candidature, utilizador, transition.efetiva_em)
+    if code == "TR-022":
+        from apps.financeiro.services import registar_risco_restituicao
+
+        registar_risco_restituicao(
+            candidatura_id=candidature.pk,
+            utilizador=utilizador,
+            motivo=motivo,
+            chave_idempotencia=f"revogacao:{transition.pk}",
+        )
     _atualizar_candidatura(
         candidature,
         transition,
@@ -1146,6 +1155,9 @@ def confirmar_termo_aceite(
         type_code=Prazo.Tipo.PRIMEIRA_PRESTACAO,
         rule_code=CODIGO_PRAZO_PRIMEIRA_PRESTACAO,
     )
+    from apps.financeiro.services import sincronizar_movimentos_previstos
+
+    sincronizar_movimentos_previstos(candidature, utilizador)
     task = _criar_tarefa(
         candidature,
         key=f"candidatura:{candidature.pk}:primeira-prestacao",
@@ -1554,6 +1566,12 @@ def registar_conclusao_encerramento(
         raise ValidationError("A conclusão tem de indicar um resultado aceite, total ou parcial.")
     if not (referencia_externa.strip() or evidencia):
         raise ValidationError("Associe a referência ou evidência da conclusão oficial.")
+    from apps.financeiro.services import candidatura_pronta_para_conclusao
+
+    if not candidatura_pronta_para_conclusao(candidature):
+        raise ValidationError(
+            "Confirme os valores financeiros finais de todas as formações deferidas."
+        )
     transition = _criar_transicao(
         candidature=candidature,
         definition=definition,
@@ -1619,6 +1637,14 @@ def confirmar_regularizacao_financeira(
         raise ValidationError("A decisão sem pagamento exige uma justificação.")
     if not sem_pagamento and not (referencia_externa.strip() or evidencia):
         raise ValidationError("Associe a referência ou evidência da regularização financeira.")
+    from apps.financeiro.services import validar_encerramento_financeiro
+
+    validar_encerramento_financeiro(
+        candidatura=candidature,
+        utilizador=utilizador,
+        sem_pagamento=sem_pagamento,
+        motivo=motivo,
+    )
     transition = _criar_transicao(
         candidature=candidature,
         definition=definition,

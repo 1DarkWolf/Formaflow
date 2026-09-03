@@ -327,21 +327,21 @@ Concluído quando:
 
 Objetivo: separar estimativas, aprovações, pagamentos e restituições.
 
-Entregáveis futuros:
+Entregáveis concluídos:
 
-- calculadores versionados pelos parâmetros aplicáveis;
-- apoios por beneficiário e participação;
-- movimentos previstos e confirmados;
-- restituições apenas com decisão oficial;
-- resumos financeiros e respetiva autorização.
+- [x] calculadores versionados pelos parâmetros aplicáveis;
+- [x] apoios por beneficiário e participação;
+- [x] movimentos previstos e confirmados;
+- [x] restituições apenas com decisão oficial;
+- [x] resumos financeiros e respetiva autorização.
 
 Concluído quando:
 
-- estimativa nunca aparece como valor aprovado;
-- fórmulas e limites do Tópico 3 têm testes de fronteira;
-- totais consideram apenas movimentos corretos;
-- duplicação de pagamento é impedida por idempotência;
-- valores individuais não são expostos a outro âmbito.
+- [x] estimativa nunca aparece como valor aprovado;
+- [x] fórmulas e limites do Tópico 3 têm testes de fronteira;
+- [x] totais consideram apenas movimentos corretos;
+- [x] duplicação de pagamento é impedida por idempotência;
+- [x] valores individuais não são expostos a outro âmbito.
 
 ### IMP-08 — Dashboard, alertas e relatórios do MVP
 

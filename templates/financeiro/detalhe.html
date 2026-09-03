@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Financeiro — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    <a href="{% url 'candidaturas:lista' %}">Candidaturas</a>
+    <span aria-hidden="true">/</span>
+    <a href="{% url 'workflow:detalhe' candidatura.public_id %}">Acompanhamento</a>
+    <span aria-hidden="true">/</span>
+    <span>Financeiro</span>
+  </nav>
+
+  <header class="detail-header application-header">
+    <div>
+      <p class="eyebrow">{{ candidatura.get_estado_atual_display }}</p>
+      <h1 class="page-title">Apoios e movimentos</h1>
+      <p class="section-copy">Estimativas, valores oficiais, pagamentos e restituições com histórico separado.</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'workflow:detalhe' candidatura.public_id %}">Voltar ao acompanhamento</a>
+  </header>
+
+  <section class="application-section" aria-labelledby="apoios">
+    <div class="section-heading-inline">
+      <div>
+        <p class="eyebrow">Cálculo por beneficiário</p>
+        <h2 id="apoios">Linhas de apoio</h2>
+      </div>
+    </div>
+    <div class="workflow-grid">
+      {% for linha in linhas_apoio %}
+        <article class="workflow-record state-{{ linha.apoio.estado|lower }}">
+          <span>{{ linha.apoio.get_tipo_display }} · {{ linha.apoio.get_estado_display }}</span>
+          <strong>{{ linha.apoio.beneficiario.candidato }}</strong>
+          {% if linha.apoio.participacao %}<p>{{ linha.apoio.participacao.acao_formacao.designacao }}</p>{% endif %}
+          <dl class="definition-grid">
+            <div><dt>Estimativa</dt><dd>{{ linha.apoio.valor_estimado|default_if_none:"—" }} €</dd></div>
+            <div><dt>Aprovado</dt><dd>{{ linha.apoio.valor_aprovado|default_if_none:"—" }} €</dd></div>
+            <div><dt>Final</dt><dd>{{ linha.apoio.valor_final|default_if_none:"—" }} €</dd></div>
+            <div><dt>Confirmado</dt><dd>{{ linha.total_confirmado }} €</dd></div>
+          </dl>
+          {% if linha.apoio.referencia_externa %}<p>Referência oficial: {{ linha.apoio.referencia_externa }}</p>{% endif %}
+        </article>
+      {% empty %}
+        <div class="empty-state"><p>Calcule as estimativas para criar as linhas de apoio.</p></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="application-section" aria-labelledby="movimentos">
+    <p class="eyebrow">Fluxo financeiro</p>
+    <h2 id="movimentos">Movimentos</h2>
+    <div class="workflow-grid">
+      {% for movimento in movimentos %}
+        <article class="workflow-record state-{{ movimento.estado|lower }}">
+          <span>{{ movimento.get_estado_display }} · {{ movimento.get_tipo_display }}</span>
+          <strong>{% if movimento.direcao == "DEBITO" %}−{% else %}+{% endif %}{{ movimento.valor }} €</strong>
+          <p>{{ movimento.apoio.beneficiario.candidato }}{% if movimento.efetivado_em %} · {{ movimento.efetivado_em|date:"d/m/Y H:i" }}{% elif movimento.previsto_para %} · previsto para {{ movimento.previsto_para|date:"d/m/Y H:i" }}{% endif %}</p>
+        </article>
+      {% empty %}
+        <div class="empty-state"><p>Ainda não existem movimentos financeiros.</p></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="application-section" aria-labelledby="restituicoes">
+    <p class="eyebrow">Decisões oficiais</p>
+    <h2 id="restituicoes">Restituições</h2>
+    <div class="workflow-grid">
+      {% for item in restituicoes %}
+        <article class="workflow-record state-{{ item.estado|lower }}">
+          <span>{{ item.get_estado_display }} · limite {{ item.data_limite|date:"d/m/Y H:i" }}</span>
+          <strong>{{ item.valor }} €</strong>
+          <p>{{ item.motivo }}</p>
+        </article>
+      {% empty %}
+        <div class="empty-state"><p>Não existem restituições oficiais visíveis.</p></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if pode_calcular %}
+    <section class="application-section" aria-labelledby="calculo-financeiro">
+      <p class="eyebrow">Preparação</p>
+      <h2 id="calculo-financeiro">Recalcular estimativas</h2>
+      <form method="post" action="{% url 'financeiro:calcular' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_calculo %}<button class="button button-primary" type="submit">Calcular</button></form>
+    </section>
+  {% endif %}
+
+  {% if pode_gerir %}
+    <section class="application-section" aria-labelledby="operacoes-financeiras">
+      <p class="eyebrow">Operações autorizadas</p>
+      <h2 id="operacoes-financeiras">Atualizar financeiro</h2>
+      <details class="editor-panel"><summary>Registar valores oficiais</summary>
+        <form method="post" action="{% url 'financeiro:confirmar' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_confirmacao %}<button class="button button-primary" type="submit">Confirmar valores</button></form>
+      </details>
+      <details class="editor-panel"><summary>Registar movimento</summary>
+        <form method="post" action="{% url 'financeiro:movimento' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_movimento %}<button class="button button-primary" type="submit">Registar movimento</button></form>
+      </details>
+      <details class="editor-panel"><summary>Sinalizar risco de restituição</summary>
+        <p class="section-copy">A sinalização cria uma tarefa de análise, nunca uma dívida automática.</p>
+        <form method="post" action="{% url 'financeiro:risco' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_risco %}<button class="button button-secondary" type="submit">Criar tarefa de análise</button></form>
+      </details>
+      <details class="editor-panel"><summary>Registar restituição comunicada</summary>
+        <form method="post" action="{% url 'financeiro:restituicao' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_restituicao %}<button class="button button-secondary" type="submit">Registar decisão oficial</button></form>
+      </details>
+      {% if restituicoes %}
+        <details class="editor-panel"><summary>Atualizar regularização de restituição</summary>
+          <form method="post" action="{% url 'financeiro:regularizar_restituicao' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_regularizacao_restituicao %}<button class="button button-secondary" type="submit">Atualizar regularização</button></form>
+        </details>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

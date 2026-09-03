@@ -666,6 +666,9 @@ Qualquer acontecimento ocorrido no Iefponline ou comunicado pelo IEFP deverá gu
 | CFG-EMP-PERCENTAGEM | Percentagem máxima do custo | 90 | percentagem |
 | CFG-DESEMP-HORAS | Horas máximas do desempregado | 150 | horas |
 | CFG-DESEMP-MONTANTE | Apoio máximo do desempregado | 500 | euros |
+| CFG-IAS | Indexante usado na demonstração | 438,81 | euros |
+| CFG-BOLSA-IAS-PERCENTAGEM | Percentagem do IAS para bolsa | 35 | percentagem |
+| CFG-REFEICAO-DIARIO | Subsídio diário de refeição usado na demonstração | 4,77 | euros/dia |
 | CFG-EMPRESA-BENEFICIARIOS | Trabalhadores por candidatura | 20 | trabalhadores |
 | CFG-FICHEIRO-TAMANHO | Tamanho máximo de documento | 2 | MB |
 | CFG-ANALISE-PRAZO | Decisão da candidatura | 30 | dias úteis |

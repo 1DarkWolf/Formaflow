@@ -3,6 +3,10 @@
 {% block title %}Acompanhamento da candidatura — Forma Flow{% endblock %}
 
 {% block content %}
+  <div class="notice-inline">
+    Consulte estimativas, valores oficiais e pagamentos na
+    <a class="text-link" href="{% url 'financeiro:detalhe' candidatura.public_id %}">área financeira</a>.
+  </div>
   <nav class="breadcrumb" aria-label="Navegação estrutural">
     <a href="{% url 'candidaturas:detalhe' candidatura.public_id %}">Candidatura</a>
     <span aria-hidden="true">/</span>
