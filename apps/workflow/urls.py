@@ -34,4 +34,35 @@ urlpatterns = [
         name="resposta_completa",
     ),
     path("<uuid:public_id>/decisao/", views.decisao, name="decisao"),
+    path("<uuid:public_id>/termo/", views.termo, name="termo"),
+    path(
+        "participacoes/<int:participacao_id>/",
+        views.participacao,
+        name="participacao",
+    ),
+    path(
+        "<uuid:public_id>/encerramento/iniciar/",
+        views.iniciar_encerramento,
+        name="iniciar_encerramento",
+    ),
+    path(
+        "<uuid:public_id>/encerramento/submeter/",
+        views.submissao_encerramento,
+        name="submissao_encerramento",
+    ),
+    path(
+        "<uuid:public_id>/encerramento/concluir/",
+        views.conclusao_encerramento,
+        name="conclusao_encerramento",
+    ),
+    path(
+        "<uuid:public_id>/encerramento/regularizar/",
+        views.regularizacao_financeira,
+        name="regularizacao_financeira",
+    ),
+    path(
+        "<uuid:public_id>/correcao/",
+        views.correcao_terminal,
+        name="correcao_terminal",
+    ),
 ]

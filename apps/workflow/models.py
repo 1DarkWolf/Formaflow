@@ -118,7 +118,19 @@ class TransicaoCandidatura(models.Model):
             errors["evidencia"] = "A evidência não pertence à candidatura."
         if self.versao_nova != self.versao_anterior + 1:
             errors["versao_nova"] = "A versão nova deve avançar exatamente uma unidade."
-        if self.codigo in {"TR-005", "TR-010", "TR-011", "TR-012"} and not self.motivo.strip():
+        if (
+            self.codigo
+            in {
+                "TR-005",
+                "TR-010",
+                "TR-011",
+                "TR-012",
+                "TR-014",
+                "TR-022",
+                "TR-023",
+            }
+            and not self.motivo.strip()
+        ):
             errors["motivo"] = "Esta transição exige um motivo."
         if not self.chave_idempotencia:
             errors["chave_idempotencia"] = "Indique uma chave de idempotência."

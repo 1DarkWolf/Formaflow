@@ -5,24 +5,32 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
-from apps.candidaturas.models import Candidatura
+from apps.candidaturas.models import Candidatura, ParticipacaoFormacao
 from apps.candidaturas.selectors import (
     candidaturas_visiveis_por,
     utilizador_pode_consultar_equipa,
     utilizador_pode_operar_candidatura,
 )
 from apps.documentos.services import carregar_documento_workflow
+from apps.organizacoes.selectors import utilizador_e_administrador
 
 from .exceptions import ConflitoWorkflow, TransicaoInvalida
 from .forms import (
     FormularioAcontecimento,
+    FormularioConclusaoEncerramento,
+    FormularioConfirmacaoWorkflow,
+    FormularioCorrecao,
     FormularioDecisao,
     FormularioDocumentoWorkflow,
+    FormularioParticipacao,
     FormularioPedidoElementos,
+    FormularioRegularizacaoFinanceira,
     FormularioResposta,
     FormularioRespostaCompleta,
+    FormularioSubmissaoEncerramento,
+    FormularioTermoRecebido,
 )
-from .models import PedidoElementos, QuestaoPedido, TransicaoCandidatura
+from .models import PedidoElementos, QuestaoPedido, TermoAceitacao, TransicaoCandidatura
 from .selectors import (
     pedidos_visiveis_por,
     proxima_acao,
@@ -32,14 +40,32 @@ from .selectors import (
 )
 from .services import (
     aplicar_transicao,
+    associar_termo_recebido,
+    confirmar_regularizacao_financeira,
+    confirmar_termo_aceite,
+    corrigir_estado_terminal,
     guardar_resposta_rascunho,
+    iniciar_preparacao_encerramento,
+    registar_conclusao_encerramento,
     registar_decisao,
     registar_pedido_elementos,
     registar_resposta_completa,
+    registar_resultado_participacao,
+    submeter_encerramento,
 )
 from .transitions import obter_transicao
 
-CODIGOS_GERAIS = {"TR-002", "TR-003", "TR-004", "TR-005", "TR-006", "TR-012"}
+CODIGOS_GERAIS = {
+    "TR-002",
+    "TR-003",
+    "TR-004",
+    "TR-005",
+    "TR-006",
+    "TR-012",
+    "TR-014",
+    "TR-017",
+    "TR-022",
+}
 
 
 def _obter_candidatura(user, public_id):
@@ -56,7 +82,9 @@ def _obter_candidatura(user, public_id):
 def _pode_registar_oficial(user, candidature):
     return bool(
         utilizador_pode_operar_candidatura(user, candidature)
-        and utilizador_pode_consultar_equipa(user, candidature)
+        and (
+            utilizador_e_administrador(user) or utilizador_pode_consultar_equipa(user, candidature)
+        )
     )
 
 
@@ -82,6 +110,31 @@ def _acoes_disponiveis(user, candidature):
         actions.append(obter_transicao("TR-012"))
     elif can_official and state == Candidatura.Estado.AGUARDA_ELEMENTOS:
         actions.append(obter_transicao("TR-012"))
+    elif state == Candidatura.Estado.APROVADA_AGUARDA_TERMO:
+        if can_operate:
+            actions.append(obter_transicao("TR-013"))
+        if can_official:
+            actions.extend((obter_transicao("TR-014"), obter_transicao("TR-022")))
+    elif can_official and state == Candidatura.Estado.APROVADA_ACOMPANHAMENTO:
+        actions.extend((obter_transicao("TR-015"), obter_transicao("TR-022")))
+    elif can_official and state == Candidatura.Estado.ENCERRAMENTO_PREPARACAO:
+        actions.extend((obter_transicao("TR-016"), obter_transicao("TR-022")))
+    elif can_official and state == Candidatura.Estado.ENCERRAMENTO_SUBMETIDO:
+        actions.extend((obter_transicao("TR-017"), obter_transicao("TR-022")))
+    elif can_official and state == Candidatura.Estado.ENCERRAMENTO_ANALISE:
+        actions.extend(
+            (
+                obter_transicao("TR-018"),
+                obter_transicao("TR-020"),
+                obter_transicao("TR-022"),
+            )
+        )
+    elif can_official and state == Candidatura.Estado.ENCERRAMENTO_AGUARDA_ELEMENTOS:
+        actions.append(obter_transicao("TR-022"))
+    elif can_official and state == Candidatura.Estado.CONCLUIDA_AGUARDA_PAGAMENTO:
+        actions.extend((obter_transicao("TR-021"), obter_transicao("TR-022")))
+    elif utilizador_e_administrador(user) and state in obter_transicao("TR-023").origens:
+        actions.append(obter_transicao("TR-023"))
     return actions
 
 
@@ -97,6 +150,12 @@ def _contexto_detalhe(user, candidature):
         "prazos": candidature.prazos.prefetch_related("suspensoes"),
         "tarefas": tarefas_visiveis_por(user, candidature).select_related("atribuida_a"),
         "pode_operar": utilizador_pode_operar_candidatura(user, candidature),
+        "participacoes": ParticipacaoFormacao.objects.filter(
+            beneficiario__candidatura=candidature,
+            beneficiario__resultado="DEFERIDA",
+        ).select_related("beneficiario__candidato__utilizador", "acao_formacao"),
+        "termo": getattr(candidature, "termo_aceitacao", None),
+        "encerramento": getattr(candidature, "pedido_encerramento", None),
     }
 
 
@@ -116,6 +175,10 @@ def novo_documento(request, public_id):
         Candidatura.Estado.EM_ANALISE,
         Candidatura.Estado.AGUARDA_ELEMENTOS,
         Candidatura.Estado.APROVADA_AGUARDA_TERMO,
+        Candidatura.Estado.APROVADA_ACOMPANHAMENTO,
+        Candidatura.Estado.ENCERRAMENTO_PREPARACAO,
+        Candidatura.Estado.ENCERRAMENTO_AGUARDA_ELEMENTOS,
+        Candidatura.Estado.CONCLUIDA_AGUARDA_PAGAMENTO,
     } or not utilizador_pode_operar_candidatura(request.user, candidature):
         raise PermissionDenied("Não pode guardar documentos nesta candidatura.")
     form = FormularioDocumentoWorkflow(request.POST or None, request.FILES or None)
@@ -209,7 +272,7 @@ def acontecimento(request, public_id, codigo):
         origin = TransicaoCandidatura.Origem.UTILIZADOR
         if code == "TR-004":
             origin = TransicaoCandidatura.Origem.IEFPONLINE
-        elif code in {"TR-006", "TR-012"}:
+        elif code in {"TR-006", "TR-012", "TR-014", "TR-017", "TR-022"}:
             origin = TransicaoCandidatura.Origem.COMUNICACAO_IEFP
         try:
             aplicar_transicao(
@@ -252,9 +315,10 @@ def acontecimento(request, public_id, codigo):
 @require_http_methods(["GET", "POST"])
 def novo_pedido(request, public_id):
     candidature = _obter_candidatura(request.user, public_id)
-    if candidature.estado_atual != Candidatura.Estado.EM_ANALISE or not _pode_registar_oficial(
-        request.user, candidature
-    ):
+    if candidature.estado_atual not in {
+        Candidatura.Estado.EM_ANALISE,
+        Candidatura.Estado.ENCERRAMENTO_ANALISE,
+    } or not _pode_registar_oficial(request.user, candidature):
         raise PermissionDenied("Não pode registar pedidos nesta candidatura.")
     form = FormularioPedidoElementos(request.POST or None, candidatura=candidature)
     if request.method == "POST" and form.is_valid():
@@ -465,4 +529,330 @@ def decisao(request, public_id):
         "workflow/decisao.html",
         {"candidatura": candidature, "form": form},
         status=status,
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def termo(request, public_id):
+    candidature = _obter_candidatura(request.user, public_id)
+    if (
+        candidature.estado_atual != Candidatura.Estado.APROVADA_AGUARDA_TERMO
+        or not utilizador_pode_operar_candidatura(request.user, candidature)
+    ):
+        raise PermissionDenied("O termo não está disponível nesta fase.")
+    term_record = get_object_or_404(TermoAceitacao, candidatura=candidature)
+    reception_form = FormularioTermoRecebido(
+        request.POST if request.POST.get("acao") == "receber" else None,
+        candidatura=candidature,
+        prefix="rececao",
+    )
+    confirmation_form = FormularioConfirmacaoWorkflow(
+        request.POST if request.POST.get("acao") == "confirmar" else None,
+        candidatura=candidature,
+        prefix="confirmacao",
+    )
+    if request.method == "POST" and request.POST.get("acao") == "receber":
+        if reception_form.is_valid():
+            try:
+                associar_termo_recebido(
+                    candidatura_id=candidature.pk,
+                    documento=reception_form.cleaned_data["documento"],
+                    utilizador=request.user,
+                    versao_esperada=reception_form.cleaned_data["versao"],
+                    recebido_em=reception_form.cleaned_data["recebido_em"],
+                    tipo_assinatura=reception_form.cleaned_data["tipo_assinatura"],
+                    justificacao=reception_form.cleaned_data["justificacao"],
+                )
+            except (ValidationError, TransicaoInvalida, ConflitoWorkflow) as error:
+                reception_form.add_error(None, error)
+            else:
+                messages.success(request, "A receção do termo foi registada.")
+                return redirect("workflow:termo", public_id=candidature.public_id)
+    elif request.method == "POST" and request.POST.get("acao") == "confirmar":
+        if not _pode_registar_oficial(request.user, candidature):
+            raise PermissionDenied("A validação do termo exige um gestor autorizado.")
+        if confirmation_form.is_valid():
+            try:
+                confirmar_termo_aceite(
+                    candidatura_id=candidature.pk,
+                    utilizador=request.user,
+                    versao_esperada=confirmation_form.cleaned_data["versao"],
+                    chave_idempotencia=confirmation_form.cleaned_data["chave_idempotencia"],
+                    efetiva_em=confirmation_form.cleaned_data["efetiva_em"],
+                    confirmacao=confirmation_form.cleaned_data["confirmacao"],
+                )
+            except (ValidationError, TransicaoInvalida, ConflitoWorkflow) as error:
+                confirmation_form.add_error(None, error)
+            else:
+                messages.success(request, "O termo foi validado e o acompanhamento começou.")
+                return redirect("workflow:detalhe", public_id=candidature.public_id)
+    status = 400 if request.method == "POST" else 200
+    return render(
+        request,
+        "workflow/termo.html",
+        {
+            "candidatura": candidature,
+            "termo": term_record,
+            "form_rececao": reception_form,
+            "form_confirmacao": confirmation_form,
+            "pode_confirmar": _pode_registar_oficial(request.user, candidature),
+        },
+        status=status,
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def participacao(request, participacao_id):
+    participation = get_object_or_404(
+        ParticipacaoFormacao.objects.select_related(
+            "beneficiario__candidatura", "beneficiario__candidato__utilizador", "acao_formacao"
+        ),
+        pk=participacao_id,
+    )
+    candidature = _obter_candidatura(request.user, participation.beneficiario.candidatura.public_id)
+    if (
+        candidature.estado_atual != Candidatura.Estado.APROVADA_ACOMPANHAMENTO
+        or not utilizador_pode_operar_candidatura(request.user, candidature)
+    ):
+        raise PermissionDenied("A participação não pode ser atualizada nesta fase.")
+    form = FormularioParticipacao(
+        request.POST or None,
+        participacao=participation,
+    )
+    if request.method == "POST" and form.is_valid():
+        try:
+            registar_resultado_participacao(
+                participacao_id=participation.pk,
+                utilizador=request.user,
+                **form.cleaned_data,
+            )
+        except (ValidationError, TransicaoInvalida) as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "O estado da participação foi atualizado.")
+            return redirect("workflow:detalhe", public_id=candidature.public_id)
+    status = 400 if request.method == "POST" else 200
+    return render(
+        request,
+        "workflow/formulario_fase.html",
+        {
+            "candidatura": candidature,
+            "form": form,
+            "titulo": "Atualizar participação na formação",
+            "descricao": f"{participation.beneficiario.candidato} · {participation.acao_formacao}",
+            "botao": "Guardar resultado",
+        },
+        status=status,
+    )
+
+
+def _render_formulario_fase(request, candidature, form, *, title, description, button, status=200):
+    return render(
+        request,
+        "workflow/formulario_fase.html",
+        {
+            "candidatura": candidature,
+            "form": form,
+            "titulo": title,
+            "descricao": description,
+            "botao": button,
+        },
+        status=status,
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def iniciar_encerramento(request, public_id):
+    candidature = _obter_candidatura(request.user, public_id)
+    if (
+        candidature.estado_atual != Candidatura.Estado.APROVADA_ACOMPANHAMENTO
+        or not _pode_registar_oficial(request.user, candidature)
+    ):
+        raise PermissionDenied("O encerramento não pode ser iniciado nesta fase.")
+    form = FormularioConfirmacaoWorkflow(request.POST or None, candidatura=candidature)
+    if request.method == "POST" and form.is_valid():
+        try:
+            iniciar_preparacao_encerramento(
+                candidatura_id=candidature.pk,
+                utilizador=request.user,
+                versao_esperada=form.cleaned_data["versao"],
+                chave_idempotencia=form.cleaned_data["chave_idempotencia"],
+                efetiva_em=form.cleaned_data["efetiva_em"],
+                confirmacao=form.cleaned_data["confirmacao"],
+            )
+        except (ValidationError, TransicaoInvalida, ConflitoWorkflow) as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "A preparação do encerramento foi iniciada.")
+            return redirect("documentos:checklist", public_id=candidature.public_id)
+    return _render_formulario_fase(
+        request,
+        candidature,
+        form,
+        title="Iniciar preparação do encerramento",
+        description="Confirme que todas as participações deferidas têm resultado final.",
+        button="Gerar checklist final",
+        status=400 if request.method == "POST" else 200,
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def submissao_encerramento(request, public_id):
+    candidature = _obter_candidatura(request.user, public_id)
+    if (
+        candidature.estado_atual != Candidatura.Estado.ENCERRAMENTO_PREPARACAO
+        or not _pode_registar_oficial(request.user, candidature)
+    ):
+        raise PermissionDenied("O encerramento não pode ser submetido nesta fase.")
+    form = FormularioSubmissaoEncerramento(request.POST or None, candidatura=candidature)
+    if request.method == "POST" and form.is_valid():
+        try:
+            submeter_encerramento(
+                candidatura_id=candidature.pk,
+                utilizador=request.user,
+                versao_esperada=form.cleaned_data["versao"],
+                chave_idempotencia=form.cleaned_data["chave_idempotencia"],
+                efetiva_em=form.cleaned_data["efetiva_em"],
+                referencia_externa=form.cleaned_data["referencia_externa"],
+                evidencia=form.cleaned_data["evidencia"],
+                motivo_atraso=form.cleaned_data["motivo_atraso"],
+                confirmacao=form.cleaned_data["confirmacao"],
+            )
+        except (ValidationError, TransicaoInvalida, ConflitoWorkflow) as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "A submissão do encerramento foi registada.")
+            return redirect("workflow:detalhe", public_id=candidature.public_id)
+    return _render_formulario_fase(
+        request,
+        candidature,
+        form,
+        title="Submeter pedido de encerramento",
+        description="Só é possível continuar com todos os documentos finais resolvidos.",
+        button="Registar submissão",
+        status=400 if request.method == "POST" else 200,
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def conclusao_encerramento(request, public_id):
+    candidature = _obter_candidatura(request.user, public_id)
+    if (
+        candidature.estado_atual != Candidatura.Estado.ENCERRAMENTO_ANALISE
+        or not _pode_registar_oficial(request.user, candidature)
+    ):
+        raise PermissionDenied("A conclusão não pode ser registada nesta fase.")
+    form = FormularioConclusaoEncerramento(request.POST or None, candidatura=candidature)
+    if request.method == "POST" and form.is_valid():
+        try:
+            registar_conclusao_encerramento(
+                candidatura_id=candidature.pk,
+                utilizador=request.user,
+                versao_esperada=form.cleaned_data["versao"],
+                chave_idempotencia=form.cleaned_data["chave_idempotencia"],
+                efetiva_em=form.cleaned_data["efetiva_em"],
+                resultado_final=form.cleaned_data["resultado_final"],
+                referencia_externa=form.cleaned_data["referencia_externa"],
+                observacoes=form.cleaned_data["observacoes"],
+                evidencia=form.cleaned_data["evidencia"],
+                confirmacao=form.cleaned_data["confirmacao"],
+            )
+        except (ValidationError, TransicaoInvalida, ConflitoWorkflow) as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "A conclusão oficial foi registada.")
+            return redirect("workflow:detalhe", public_id=candidature.public_id)
+    return _render_formulario_fase(
+        request,
+        candidature,
+        form,
+        title="Registar conclusão do encerramento",
+        description="Transcreva apenas o resultado que consta da comunicação oficial.",
+        button="Registar conclusão",
+        status=400 if request.method == "POST" else 200,
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def regularizacao_financeira(request, public_id):
+    candidature = _obter_candidatura(request.user, public_id)
+    if (
+        candidature.estado_atual != Candidatura.Estado.CONCLUIDA_AGUARDA_PAGAMENTO
+        or not _pode_registar_oficial(request.user, candidature)
+    ):
+        raise PermissionDenied("A regularização não pode ser confirmada nesta fase.")
+    form = FormularioRegularizacaoFinanceira(request.POST or None, candidatura=candidature)
+    if request.method == "POST" and form.is_valid():
+        try:
+            confirmar_regularizacao_financeira(
+                candidatura_id=candidature.pk,
+                utilizador=request.user,
+                versao_esperada=form.cleaned_data["versao"],
+                chave_idempotencia=form.cleaned_data["chave_idempotencia"],
+                efetiva_em=form.cleaned_data["efetiva_em"],
+                regularizacao_confirmada=form.cleaned_data["regularizacao_confirmada"],
+                referencia_externa=form.cleaned_data["referencia_externa"],
+                evidencia=form.cleaned_data["evidencia"],
+                sem_pagamento=form.cleaned_data["sem_pagamento"],
+                motivo=form.cleaned_data["motivo"],
+                confirmacao=form.cleaned_data["confirmacao"],
+            )
+        except (ValidationError, TransicaoInvalida, ConflitoWorkflow) as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "A candidatura foi encerrada.")
+            return redirect("workflow:detalhe", public_id=candidature.public_id)
+    return _render_formulario_fase(
+        request,
+        candidature,
+        form,
+        title="Confirmar regularização financeira",
+        description=(
+            "Este registo declarativo será conciliado com os movimentos financeiros "
+            "no módulo seguinte."
+        ),
+        button="Encerrar candidatura",
+        status=400 if request.method == "POST" else 200,
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def correcao_terminal(request, public_id):
+    candidature = _obter_candidatura(request.user, public_id)
+    if candidature.estado_atual not in obter_transicao(
+        "TR-023"
+    ).origens or not utilizador_e_administrador(request.user):
+        raise PermissionDenied("A correção terminal exige um administrador.")
+    form = FormularioCorrecao(request.POST or None, candidatura=candidature)
+    if request.method == "POST" and form.is_valid():
+        try:
+            corrigir_estado_terminal(
+                candidatura_id=candidature.pk,
+                utilizador=request.user,
+                versao_esperada=form.cleaned_data["versao"],
+                chave_idempotencia=form.cleaned_data["chave_idempotencia"],
+                efetiva_em=form.cleaned_data["efetiva_em"],
+                motivo=form.cleaned_data["motivo"],
+                confirmacao=form.cleaned_data["confirmacao"],
+            )
+        except (ValidationError, TransicaoInvalida, ConflitoWorkflow) as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, "A correção foi registada sem apagar o histórico.")
+            return redirect("workflow:detalhe", public_id=candidature.public_id)
+    return _render_formulario_fase(
+        request,
+        candidature,
+        form,
+        title="Corrigir último estado terminal",
+        description="A operação anterior fica preservada e ligada a esta correção.",
+        button="Registar correção",
+        status=400 if request.method == "POST" else 200,
     )

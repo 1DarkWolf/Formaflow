@@ -385,6 +385,7 @@ class ParticipacaoFormacao(ModeloTemporal):
         null=True,
     )
     resultado_registado_em = models.DateTimeField(blank=True, null=True)
+    motivo_resultado = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "participação em formação"
@@ -437,6 +438,11 @@ class ParticipacaoFormacao(ModeloTemporal):
             and self.horas_previstas > self.acao_formacao.horas_totais
         ):
             errors["horas_previstas"] = "As horas previstas excedem a carga horária da ação."
+        if (
+            self.estado in {AcaoFormacao.Estado.INTERROMPIDA, AcaoFormacao.Estado.CANCELADA}
+            and not self.motivo_resultado.strip()
+        ):
+            errors["motivo_resultado"] = "Indique o motivo da interrupção ou cancelamento."
         if errors:
             raise ValidationError(errors)
 

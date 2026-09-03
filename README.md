@@ -4,9 +4,9 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação concluiu os incrementos `IMP-00` a `IMP-05`, desde a base do projeto até à submissão e análise da candidatura.
+A implementação concluiu os incrementos `IMP-00` a `IMP-06`, desde a base do projeto até ao encerramento administrativo da candidatura.
 
-Estão disponíveis autenticação por email, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-012`, snapshots, prazos, suspensões, pedidos, respostas, decisões por beneficiário, tarefas e notificações sem executar decisões no Iefponline. O próximo incremento é o `IMP-06`, dedicado à aceitação, acompanhamento e encerramento.
+Estão disponíveis autenticação por email, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-023`, termo de aceitação, execução das formações, snapshots, prazos, suspensões, pedidos finais, decisões por beneficiário, revogação e correções auditáveis sem executar decisões no Iefponline. O próximo incremento é o `IMP-07`, dedicado ao circuito financeiro detalhado.
 
 ## Requisitos
 
@@ -98,7 +98,7 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17.
 - `/candidaturas/` — candidaturas visíveis e assistente de preparação;
 - `/candidaturas/nova/` — criação de rascunho individual ou empresarial;
 - `/documentos/candidatura/<uuid>/` — checklist e comprovativos privados da candidatura;
-- `/workflow/<uuid>/` — acompanhamento, prazos, pedidos e histórico imutável;
+- `/workflow/<uuid>/` — acompanhamento, termo, execução, encerramento e histórico imutável;
 - `/organizacoes/empresas/` — empresas visíveis no âmbito do utilizador;
 - `/regras/` — versões de regras visíveis e publicação autorizada;
 - `/admin/` — administração técnica para contas autorizadas.

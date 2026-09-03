@@ -306,7 +306,7 @@ Critérios verificados:
 
 Objetivo: completar o percurso administrativo posterior à aprovação.
 
-Entregáveis futuros:
+Entregáveis implementados:
 
 - transições `TR-013` a `TR-023`;
 - termo, assinatura registada e prazo;
@@ -317,11 +317,11 @@ Entregáveis futuros:
 
 Concluído quando:
 
-- termo fora de prazo gera alerta sem inventar decisão;
-- encerramento exige documentos finais válidos;
-- estados terminais bloqueiam edição normal;
-- revogação e correção deixam histórico completo;
-- percurso favorável e percursos excecionais são demonstráveis.
+- [x] Termo fora de prazo gera alerta sem inventar decisão.
+- [x] Encerramento exige documentos finais válidos.
+- [x] Estados terminais bloqueiam edição normal.
+- [x] Revogação e correção deixam histórico completo.
+- [x] Percurso favorável e percursos excecionais são demonstráveis.
 
 ### IMP-07 — Financeiro
 

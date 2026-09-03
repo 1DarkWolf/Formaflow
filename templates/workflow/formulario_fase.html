@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    <a href="{% url 'workflow:detalhe' candidatura.public_id %}">Acompanhamento</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ titulo }}</span>
+  </nav>
+  <header class="detail-header">
+    <div>
+      <p class="eyebrow">{{ candidatura.get_estado_atual_display }}</p>
+      <h1 class="page-title">{{ titulo }}</h1>
+      <p class="section-copy">{{ descricao }}</p>
+    </div>
+  </header>
+  <section class="form-card workflow-form-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/formulario.html" with form=form %}
+      <div class="actions">
+        <button class="button button-primary" type="submit">{{ botao }}</button>
+        <a class="button button-secondary" href="{% url 'workflow:detalhe' candidatura.public_id %}">Cancelar</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

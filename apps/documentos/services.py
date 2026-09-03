@@ -36,11 +36,38 @@ def _exigir_edicao(user, candidatura):
         raise PermissionDenied("Não pode alterar os documentos desta candidatura.")
 
 
+def _fase_documental_aberta(candidature, phase):
+    states_by_phase = {
+        FaseDocumento.PREPARACAO: {
+            Candidatura.Estado.RASCUNHO,
+            Candidatura.Estado.PRONTA_SUBMISSAO,
+        },
+        FaseDocumento.ANALISE: {
+            Candidatura.Estado.SUBMETIDA,
+            Candidatura.Estado.EM_ANALISE,
+            Candidatura.Estado.AGUARDA_ELEMENTOS,
+        },
+        FaseDocumento.ACEITACAO: {Candidatura.Estado.APROVADA_AGUARDA_TERMO},
+        FaseDocumento.ACOMPANHAMENTO: {Candidatura.Estado.APROVADA_ACOMPANHAMENTO},
+        FaseDocumento.ENCERRAMENTO: {
+            Candidatura.Estado.ENCERRAMENTO_PREPARACAO,
+            Candidatura.Estado.ENCERRAMENTO_AGUARDA_ELEMENTOS,
+        },
+        FaseDocumento.FINANCEIRA: {Candidatura.Estado.CONCLUIDA_AGUARDA_PAGAMENTO},
+    }
+    return candidature.estado_atual in states_by_phase.get(phase, set())
+
+
 def utilizador_pode_carregar_requisito(user, requirement):
     candidature = requirement.candidatura
-    if not candidature.editavel or not user or not user.is_authenticated or not user.is_active:
+    if (
+        not _fase_documental_aberta(candidature, requirement.fase)
+        or not user
+        or not user.is_authenticated
+        or not user.is_active
+    ):
         return False
-    if utilizador_pode_editar_candidatura(user, candidature):
+    if utilizador_pode_operar_candidatura(user, candidature):
         return True
     profile = getattr(user, "perfil_candidato", None)
     if profile is None:
@@ -57,12 +84,14 @@ def utilizador_pode_substituir_documento(user, document):
     if document.requisito_id:
         return utilizador_pode_carregar_requisito(user, document.requisito)
     candidature = document.candidatura
-    if utilizador_pode_editar_candidatura(user, candidature):
+    if _fase_documental_aberta(candidature, document.fase) and utilizador_pode_operar_candidatura(
+        user, candidature
+    ):
         return True
     profile = getattr(user, "perfil_candidato", None)
     return bool(
         profile
-        and candidature.editavel
+        and _fase_documental_aberta(candidature, document.fase)
         and user.is_active
         and document.beneficiario_id
         and document.beneficiario.candidato_id == profile.pk
@@ -71,7 +100,17 @@ def utilizador_pode_substituir_documento(user, document):
 
 def utilizador_pode_validar_documentos(user, candidatura):
     return bool(
-        utilizador_pode_editar_candidatura(user, candidatura)
+        utilizador_pode_operar_candidatura(user, candidatura)
+        and candidatura.estado_atual
+        not in {
+            Candidatura.Estado.ENCERRADA,
+            Candidatura.Estado.INDEFERIDA,
+            Candidatura.Estado.ARQUIVADA,
+            Candidatura.Estado.DESISTIDA,
+            Candidatura.Estado.EXTINTA,
+            Candidatura.Estado.REVOGADA,
+            Candidatura.Estado.RASCUNHO_ARQUIVADO,
+        }
         and (
             utilizador_e_administrador(user) or utilizador_pode_consultar_equipa(user, candidatura)
         )
@@ -334,11 +373,15 @@ def carregar_documento_workflow(
     beneficiario=None,
 ):
     candidature = Candidatura.objects.select_related("conjunto_regras").get(pk=candidatura_id)
-    allowed_states = {
-        Candidatura.Estado.SUBMETIDA,
-        Candidatura.Estado.EM_ANALISE,
-        Candidatura.Estado.AGUARDA_ELEMENTOS,
-        Candidatura.Estado.APROVADA_AGUARDA_TERMO,
+    phases_by_state = {
+        Candidatura.Estado.SUBMETIDA: FaseDocumento.ANALISE,
+        Candidatura.Estado.EM_ANALISE: FaseDocumento.ANALISE,
+        Candidatura.Estado.AGUARDA_ELEMENTOS: FaseDocumento.ANALISE,
+        Candidatura.Estado.APROVADA_AGUARDA_TERMO: FaseDocumento.ACEITACAO,
+        Candidatura.Estado.APROVADA_ACOMPANHAMENTO: FaseDocumento.ACOMPANHAMENTO,
+        Candidatura.Estado.ENCERRAMENTO_PREPARACAO: FaseDocumento.ENCERRAMENTO,
+        Candidatura.Estado.ENCERRAMENTO_AGUARDA_ELEMENTOS: FaseDocumento.ENCERRAMENTO,
+        Candidatura.Estado.CONCLUIDA_AGUARDA_PAGAMENTO: FaseDocumento.FINANCEIRA,
     }
     profile = getattr(utilizador, "perfil_candidato", None)
     beneficiary_scope = bool(
@@ -347,7 +390,7 @@ def carregar_documento_workflow(
         and beneficiario.candidato_id == profile.pk
         and beneficiario.candidatura_id == candidature.pk
     )
-    if candidature.estado_atual not in allowed_states or not (
+    if candidature.estado_atual not in phases_by_state or not (
         utilizador_pode_operar_candidatura(utilizador, candidature) or beneficiary_scope
     ):
         raise PermissionDenied("Não pode guardar documentos de acompanhamento nesta fase.")
@@ -365,7 +408,7 @@ def carregar_documento_workflow(
                 candidatura=candidature,
                 beneficiario=beneficiario,
                 tipo_documento=tipo_documento,
-                fase=FaseDocumento.ANALISE,
+                fase=phases_by_state[candidature.estado_atual],
                 titulo=titulo.strip(),
                 estado_atual=EstadoDocumento.RECEBIDO,
                 criado_por=utilizador,
@@ -471,6 +514,12 @@ def criar_snapshot(
     )
     if candidature.estado_atual == Candidatura.Estado.RASCUNHO:
         _exigir_edicao(utilizador, candidature)
+    elif candidature.estado_atual == Candidatura.Estado.ENCERRAMENTO_PREPARACAO:
+        if not (
+            finalidade == SnapshotSubmissao.Finalidade.ENCERRAMENTO
+            and utilizador_pode_operar_candidatura(utilizador, candidature)
+        ):
+            raise PermissionDenied("Não pode criar uma fotografia nesta fase.")
     elif not (
         candidature.estado_atual == Candidatura.Estado.PRONTA_SUBMISSAO
         and utilizador_pode_operar_candidatura(utilizador, candidature)

@@ -96,7 +96,11 @@ class DocumentFixtureMixin:
             "SITUACAO_LABORAL": TipoDocumento.Categoria.EMPREGO,
             "CURRICULO": TipoDocumento.Categoria.EMPREGO,
             "DECLARACAO_FORMADORA": TipoDocumento.Categoria.FORMACAO,
+            "CERTIFICADO_FORMACAO": TipoDocumento.Categoria.FORMACAO,
+            "COMPROVATIVO_PAGAMENTO": TipoDocumento.Categoria.FINANCEIRO,
             "TITULARIDADE_BANCARIA": TipoDocumento.Categoria.FINANCEIRO,
+            "TERMO_ACEITACAO": TipoDocumento.Categoria.DECISAO,
+            "COMUNICACAO_IEFP": TipoDocumento.Categoria.DECISAO,
         }
         self.document_types = {
             code: TipoDocumento.objects.create(

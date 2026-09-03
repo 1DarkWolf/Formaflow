@@ -6,7 +6,10 @@ from django.utils import timezone
 
 from apps.candidaturas.models import BeneficiarioCandidatura
 from apps.documentos.models import VersaoDocumento
+from apps.formacoes.models import AcaoFormacao
 from apps.regras.models import TipoDocumento
+
+from .models import PedidoEncerramento, TermoAceitacao
 
 
 class FormularioWorkflowBase(forms.Form):
@@ -87,7 +90,7 @@ class FormularioAcontecimento(FormularioWorkflowBase):
             self.fields.pop("referencia_externa")
             self.fields.pop("evidencia")
             self.fields.pop("motivo")
-        if codigo in {"TR-005", "TR-012"}:
+        if codigo in {"TR-005", "TR-012", "TR-014", "TR-022"}:
             self.fields["motivo"].required = True
 
 
@@ -251,3 +254,172 @@ class FormularioDecisao(FormularioWorkflowBase):
             beneficiary.pk: self.cleaned_data[f"motivo_{beneficiary.pk}"]
             for beneficiary in self.candidatura.beneficiarios.order_by("pk")
         }
+
+
+class FormularioConfirmacaoWorkflow(FormularioWorkflowBase):
+    efetiva_em = forms.DateTimeField(
+        label="Data e hora efetivas",
+        input_formats=("%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M"),
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "step": 1}),
+    )
+    confirmacao = forms.BooleanField(label="Confirmo que os dados estão corretos.")
+
+    def __init__(self, *args, candidatura, **kwargs):
+        super().__init__(*args, candidatura=candidatura, **kwargs)
+        local_now = timezone.localtime(timezone.now()).replace(microsecond=0)
+        self.fields["efetiva_em"].initial = local_now.strftime("%Y-%m-%dT%H:%M:%S")
+
+
+class FormularioTermoRecebido(forms.Form):
+    versao = forms.IntegerField(widget=forms.HiddenInput)
+    documento = forms.ModelChoiceField(
+        label="Termo de aceitação",
+        queryset=VersaoDocumento.objects.none(),
+    )
+    recebido_em = forms.DateTimeField(
+        label="Recebido em",
+        input_formats=("%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M"),
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "step": 1}),
+    )
+    tipo_assinatura = forms.ChoiceField(
+        label="Tipo de assinatura",
+        choices=TermoAceitacao.TipoAssinatura.choices,
+    )
+    justificacao = forms.CharField(
+        label="Observação ou justificação",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+    def __init__(self, *args, candidatura, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["versao"].initial = candidatura.versao
+        local_now = timezone.localtime(timezone.now()).replace(microsecond=0)
+        self.fields["recebido_em"].initial = local_now.strftime("%Y-%m-%dT%H:%M:%S")
+        self.fields["documento"].queryset = VersaoDocumento.objects.filter(
+            documento__candidatura=candidatura,
+            documento__tipo_documento__codigo="TERMO_ACEITACAO",
+            corrente=True,
+        ).select_related("documento__tipo_documento")
+
+
+class FormularioParticipacao(forms.Form):
+    estado = forms.ChoiceField(label="Novo estado", choices=AcaoFormacao.Estado.choices)
+    inicio_real = forms.DateField(
+        label="Início real",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    fim_real = forms.DateField(
+        label="Fim real",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    horas_frequentadas = forms.DecimalField(
+        label="Horas frequentadas", min_value=0, decimal_places=2, required=False
+    )
+    dias_tres_ou_mais_horas = forms.IntegerField(
+        label="Dias com três ou mais horas", min_value=0, required=False
+    )
+    custo_pago_formadora = forms.DecimalField(
+        label="Custo pago à formadora", min_value=0, decimal_places=2, required=False
+    )
+    motivo = forms.CharField(
+        label="Motivo da interrupção ou cancelamento",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+    def __init__(self, *args, participacao, **kwargs):
+        super().__init__(*args, **kwargs)
+        action = participacao.acao_formacao
+        if not self.is_bound:
+            self.initial.update(
+                {
+                    "inicio_real": action.inicio_real,
+                    "fim_real": action.fim_real,
+                    "horas_frequentadas": participacao.horas_frequentadas,
+                    "dias_tres_ou_mais_horas": participacao.dias_tres_ou_mais_horas,
+                    "custo_pago_formadora": participacao.custo_pago_formadora,
+                    "motivo": participacao.motivo_resultado,
+                }
+            )
+
+
+class FormularioSubmissaoEncerramento(FormularioConfirmacaoWorkflow):
+    referencia_externa = forms.CharField(label="Referência externa", max_length=100)
+    evidencia = forms.ModelChoiceField(
+        label="Evidência documental",
+        queryset=VersaoDocumento.objects.none(),
+        required=False,
+    )
+    motivo_atraso = forms.CharField(
+        label="Justificação se a submissão está fora de prazo",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+    def __init__(self, *args, candidatura, **kwargs):
+        super().__init__(*args, candidatura=candidatura, **kwargs)
+        self.fields["evidencia"].queryset = VersaoDocumento.objects.filter(
+            documento__candidatura=candidatura,
+            corrente=True,
+        ).select_related("documento__tipo_documento")
+
+
+class FormularioConclusaoEncerramento(FormularioConfirmacaoWorkflow):
+    resultado_final = forms.ChoiceField(
+        label="Resultado final",
+        choices=(
+            (
+                PedidoEncerramento.ResultadoFinal.CONCLUIDO,
+                PedidoEncerramento.ResultadoFinal.CONCLUIDO.label,
+            ),
+            (
+                PedidoEncerramento.ResultadoFinal.CONCLUIDO_PARCIAL,
+                PedidoEncerramento.ResultadoFinal.CONCLUIDO_PARCIAL.label,
+            ),
+        ),
+    )
+    referencia_externa = forms.CharField(label="Referência externa", max_length=100, required=False)
+    evidencia = forms.ModelChoiceField(
+        label="Evidência documental",
+        queryset=VersaoDocumento.objects.none(),
+        required=False,
+    )
+    observacoes = forms.CharField(
+        label="Observações da decisão",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+    def __init__(self, *args, candidatura, **kwargs):
+        super().__init__(*args, candidatura=candidatura, **kwargs)
+        self.fields["evidencia"].queryset = VersaoDocumento.objects.filter(
+            documento__candidatura=candidatura,
+            corrente=True,
+        ).select_related("documento__tipo_documento")
+
+
+class FormularioRegularizacaoFinanceira(FormularioConclusaoEncerramento):
+    resultado_final = None
+    regularizacao_confirmada = forms.BooleanField(
+        label="Confirmo que não existem movimentos financeiros pendentes."
+    )
+    sem_pagamento = forms.BooleanField(
+        label="O encerramento não implica pagamento",
+        required=False,
+    )
+    motivo = forms.CharField(
+        label="Justificação da decisão sem pagamento",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    observacoes = None
+
+
+class FormularioCorrecao(FormularioConfirmacaoWorkflow):
+    motivo = forms.CharField(
+        label="Motivo da correção administrativa",
+        widget=forms.Textarea(attrs={"rows": 4}),
+    )

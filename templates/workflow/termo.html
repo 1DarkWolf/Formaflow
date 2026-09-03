@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Termo de aceitação — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    <a href="{% url 'workflow:detalhe' candidatura.public_id %}">Acompanhamento</a>
+    <span aria-hidden="true">/</span>
+    <span>Termo de aceitação</span>
+  </nav>
+  <header class="detail-header">
+    <div>
+      <p class="eyebrow">{{ termo.get_estado_display }}</p>
+      <h1 class="page-title">Receção e validação do termo</h1>
+      <p class="section-copy">Limite calculado: {{ termo.data_limite|date:"d/m/Y H:i" }}. Um atraso gera um alerta, nunca uma decisão automática.</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'workflow:novo_documento' candidatura.public_id %}">Guardar termo PDF</a>
+  </header>
+
+  <section class="form-card workflow-form-card">
+    <p class="eyebrow">1. Receção</p>
+    <h2>Associar o documento assinado</h2>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="acao" value="receber">
+      {% include "includes/formulario.html" with form=form_rececao %}
+      <button class="button button-primary" type="submit">Registar receção</button>
+    </form>
+  </section>
+
+  {% if pode_confirmar %}
+    <section class="form-card workflow-form-card">
+      <p class="eyebrow">2. Validação</p>
+      <h2>Confirmar termo aceite</h2>
+      <p>A versão corrente deve ter sido validada por um gestor diferente de quem a carregou.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="confirmar">
+        {% include "includes/formulario.html" with form=form_confirmacao %}
+        <button class="button button-primary" type="submit">Iniciar acompanhamento</button>
+      </form>
+    </section>
+  {% endif %}
+{% endblock %}

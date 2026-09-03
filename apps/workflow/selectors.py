@@ -70,6 +70,9 @@ PROXIMA_ACAO = {
     Candidatura.Estado.ENCERRAMENTO_PREPARACAO: "Reunir os documentos finais",
     Candidatura.Estado.ENCERRAMENTO_SUBMETIDO: "Confirmar o início da análise",
     Candidatura.Estado.ENCERRAMENTO_ANALISE: "Acompanhar a decisão de encerramento",
+    Candidatura.Estado.ENCERRAMENTO_AGUARDA_ELEMENTOS: (
+        "Responder às questões finais e anexar documentos"
+    ),
     Candidatura.Estado.CONCLUIDA_AGUARDA_PAGAMENTO: "Confirmar pagamento ou regularização",
 }
 

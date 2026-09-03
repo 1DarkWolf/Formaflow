@@ -362,6 +362,7 @@ Entidade associativa entre beneficiário e ação, com valores específicos dess
 | `custo_declarado` | decimal(12,2) | S | Não negativo |
 | `custo_pago_formadora` | decimal(12,2) | N | Não negativo; valor efetivamente comprovado |
 | `resultado_registado_em` | data/hora | N | Data de confirmação da frequência ou resultado |
+| `motivo_resultado` | texto longo | C | Obrigatório quando a participação é interrompida ou cancelada |
 
 Restrição: beneficiário e ação são únicos em conjunto. O candidato não é repetido porque é obtido através do beneficiário.
 

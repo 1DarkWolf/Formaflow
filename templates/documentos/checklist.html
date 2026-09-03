@@ -13,7 +13,7 @@
 
   <header class="detail-header application-header">
     <div>
-      <p class="eyebrow">Passo 6 de 8</p>
+      <p class="eyebrow">{{ candidatura.get_estado_atual_display }}</p>
       <h1 class="page-title">Checklist documental</h1>
       <p class="hero-copy">{{ candidatura }} · {{ validos }} de {{ total }} requisito{{ total|pluralize }} resolvido{{ total|pluralize }}</p>
     </div>

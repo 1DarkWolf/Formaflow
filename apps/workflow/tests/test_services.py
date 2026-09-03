@@ -13,7 +13,7 @@ from apps.candidaturas.services import (
     definir_conta_pagamento,
     executar_verificacoes_basicas,
 )
-from apps.documentos.models import EstadoDocumento, SnapshotSubmissao
+from apps.documentos.models import EstadoDocumento, FaseDocumento, SnapshotSubmissao
 from apps.documentos.services import (
     carregar_documento_workflow,
     carregar_para_requisito,
@@ -31,6 +31,7 @@ from ..exceptions import ConflitoWorkflow, TransicaoInvalida
 from ..models import (
     Notificacao,
     PedidoElementos,
+    PedidoEncerramento,
     Prazo,
     QuestaoPedido,
     RespostaQuestao,
@@ -41,11 +42,19 @@ from ..models import (
 )
 from ..services import (
     aplicar_transicao,
+    associar_termo_recebido,
+    confirmar_regularizacao_financeira,
+    confirmar_termo_aceite,
+    corrigir_estado_terminal,
     corrigir_limite_prazo,
     guardar_resposta_rascunho,
+    iniciar_preparacao_encerramento,
+    registar_conclusao_encerramento,
     registar_decisao,
     registar_pedido_elementos,
     registar_resposta_completa,
+    registar_resultado_participacao,
+    submeter_encerramento,
 )
 
 VALID_IBAN = "PT50000201231234567890154"
@@ -62,12 +71,15 @@ class WorkflowServiceTests(DocumentFixtureMixin, TestCase):
                     designacao=code,
                     tipo_valor=ParametroRegra.TipoValor.INTEIRO,
                     valor=value,
-                    unidade="dias úteis",
+                    unidade=unit,
                 )
-                for code, value in (
-                    ("CFG-ANALISE-PRAZO", 30),
-                    ("CFG-ELEMENTOS-PRAZO", 10),
-                    ("CFG-ACEITACAO-PRAZO", 10),
+                for code, value, unit in (
+                    ("CFG-ANALISE-PRAZO", 30, "dias úteis"),
+                    ("CFG-ELEMENTOS-PRAZO", 10, "dias úteis"),
+                    ("CFG-ACEITACAO-PRAZO", 10, "dias úteis"),
+                    ("CFG-PRIMEIRA-PRESTACAO", 5, "dias úteis"),
+                    ("CFG-REMANESCENTE", 10, "dias úteis"),
+                    ("CFG-ENCERRAMENTO", 2, "meses"),
                 )
             ]
         )
@@ -224,6 +236,123 @@ class WorkflowServiceTests(DocumentFixtureMixin, TestCase):
         )
         self.application.refresh_from_db()
         return transition, request
+
+    def _approve_application(self):
+        self._submit_and_analyse()
+        outcomes = {
+            beneficiary.pk: BeneficiarioCandidatura.Resultado.DEFERIDA
+            for beneficiary in self.application.beneficiarios.all()
+        }
+        transition = registar_decisao(
+            candidatura_id=self.application.pk,
+            resultados=outcomes,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="decisao-aprovada",
+            efetiva_em=self.base_time + timedelta(hours=3),
+            evidencia=self.evidence,
+            referencia_externa="DECISAO-APROVADA",
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        return transition
+
+    def _accept_term(self, *, late=False):
+        self._approve_application()
+        version = carregar_documento_workflow(
+            candidatura_id=self.application.pk,
+            tipo_documento=self.document_types["TERMO_ACEITACAO"],
+            ficheiro=pdf_upload("termo-assinado.pdf"),
+            utilizador=self.manager,
+        )
+        validar_versao(
+            versao_id=version.pk,
+            utilizador=self.administrator,
+            resultado=version.EstadoValidacao.VALIDO,
+        )
+        term = self.application.termo_aceitacao
+        received_at = (
+            term.data_limite + timedelta(days=1) if late else self.base_time + timedelta(hours=4)
+        )
+        associar_termo_recebido(
+            candidatura_id=self.application.pk,
+            documento=version,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            recebido_em=received_at,
+            tipo_assinatura=TermoAceitacao.TipoAssinatura.DIGITAL_PESSOAL,
+        )
+        effective_at = max(received_at, self.base_time + timedelta(hours=5))
+        transition = confirmar_termo_aceite(
+            candidatura_id=self.application.pk,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="confirmar-termo",
+            efetiva_em=effective_at,
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        return transition
+
+    def _complete_training(self):
+        end_date = (self.base_time + timedelta(days=5)).date()
+        start_date = (self.base_time + timedelta(days=1)).date()
+        for participation in self.application.beneficiarios.order_by("pk").values_list(
+            "participacoes_formacao__pk", flat=True
+        ):
+            registar_resultado_participacao(
+                participacao_id=participation,
+                utilizador=self.manager,
+                estado=AcaoFormacao.Estado.CONCLUIDA_COM_APROVEITAMENTO,
+                inicio_real=start_date,
+                fim_real=end_date,
+                horas_frequentadas=Decimal("25"),
+                dias_tres_ou_mais_horas=5,
+                custo_pago_formadora=Decimal("150"),
+            )
+        return end_date
+
+    def _start_closure(self):
+        self._accept_term()
+        self._complete_training()
+        transition = iniciar_preparacao_encerramento(
+            candidatura_id=self.application.pk,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="iniciar-encerramento",
+            efetiva_em=self.base_time + timedelta(days=6),
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        return transition
+
+    def _submit_closure(self):
+        self._start_closure()
+        for requirement in self.application.requisitos_documentais.filter(
+            fase=FaseDocumento.ENCERRAMENTO
+        ):
+            version = carregar_para_requisito(
+                requisito_id=requirement.pk,
+                ficheiro=pdf_upload(f"final-{requirement.pk}.pdf"),
+                utilizador=self.manager,
+            )
+            validar_versao(
+                versao_id=version.pk,
+                utilizador=self.administrator,
+                resultado=version.EstadoValidacao.VALIDO,
+            )
+        transition = submeter_encerramento(
+            candidatura_id=self.application.pk,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="submeter-encerramento",
+            efetiva_em=self.base_time + timedelta(days=7),
+            referencia_externa="ENC-2026-001",
+            evidencia=self.evidence,
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        return transition
 
     def test_creation_is_recorded_and_direct_state_change_is_rejected(self):
         creation = self.application.transicoes.get(codigo="TR-001")
@@ -673,6 +802,293 @@ class WorkflowServiceTests(DocumentFixtureMixin, TestCase):
             transition.save()
         with self.assertRaises(ValidationError):
             transition.delete()
+
+    def test_term_out_of_time_alerts_but_can_be_accepted_after_validation(self):
+        self._accept_term(late=True)
+        self.application.refresh_from_db()
+        term = self.application.termo_aceitacao
+
+        self.assertTrue(term.fora_prazo)
+        self.assertEqual(term.estado, TermoAceitacao.Estado.VALIDADO)
+        self.assertEqual(
+            self.application.estado_atual,
+            Candidatura.Estado.APROVADA_ACOMPANHAMENTO,
+        )
+        self.assertTrue(
+            Notificacao.objects.filter(
+                candidatura=self.application,
+                codigo="TERMO_FORA_PRAZO",
+            ).exists()
+        )
+        self.assertTrue(self.application.prazos.filter(tipo=Prazo.Tipo.PRIMEIRA_PRESTACAO).exists())
+
+    def test_term_confirmation_requires_a_valid_current_document(self):
+        self._approve_application()
+        version = carregar_documento_workflow(
+            candidatura_id=self.application.pk,
+            tipo_documento=self.document_types["TERMO_ACEITACAO"],
+            ficheiro=pdf_upload("termo-pendente.pdf"),
+            utilizador=self.manager,
+        )
+        associar_termo_recebido(
+            candidatura_id=self.application.pk,
+            documento=version,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            recebido_em=self.base_time + timedelta(hours=4),
+            tipo_assinatura=TermoAceitacao.TipoAssinatura.MANUSCRITA,
+        )
+        with self.assertRaises(ValidationError):
+            confirmar_termo_aceite(
+                candidatura_id=self.application.pk,
+                utilizador=self.manager,
+                versao_esperada=self.application.versao,
+                chave_idempotencia="termo-sem-validacao",
+                efetiva_em=self.base_time + timedelta(hours=5),
+                confirmacao=True,
+            )
+        self.application.refresh_from_db()
+        self.assertEqual(
+            self.application.estado_atual,
+            Candidatura.Estado.APROVADA_AGUARDA_TERMO,
+        )
+
+    def test_closure_preparation_requires_final_results_and_generates_checklist(self):
+        self._accept_term()
+        with self.assertRaises(ValidationError):
+            iniciar_preparacao_encerramento(
+                candidatura_id=self.application.pk,
+                utilizador=self.manager,
+                versao_esperada=self.application.versao,
+                chave_idempotencia="encerramento-sem-resultados",
+                efetiva_em=self.base_time + timedelta(days=6),
+                confirmacao=True,
+            )
+
+        final_date = self._complete_training()
+        transition = iniciar_preparacao_encerramento(
+            candidatura_id=self.application.pk,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="encerramento-completo",
+            efetiva_em=self.base_time + timedelta(days=6),
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        deadline = self.application.prazos.get(tipo=Prazo.Tipo.ENCERRAMENTO)
+
+        self.assertEqual(transition.codigo, "TR-015")
+        self.assertEqual(
+            self.application.estado_atual,
+            Candidatura.Estado.ENCERRAMENTO_PREPARACAO,
+        )
+        self.assertEqual(
+            self.application.requisitos_documentais.filter(fase=FaseDocumento.ENCERRAMENTO).count(),
+            6,
+        )
+        self.assertEqual(timezone.localtime(deadline.inicio_em).date(), final_date)
+        self.assertEqual(
+            timezone.localtime(deadline.limite_calculado).month,
+            (final_date.month + 1) % 12 + 1,
+        )
+
+    def test_closure_submission_is_blocked_while_final_documents_are_missing(self):
+        self._start_closure()
+        with self.assertRaises(ValidationError):
+            submeter_encerramento(
+                candidatura_id=self.application.pk,
+                utilizador=self.manager,
+                versao_esperada=self.application.versao,
+                chave_idempotencia="encerramento-sem-documentos",
+                efetiva_em=self.base_time + timedelta(days=7),
+                referencia_externa="ENC-INCOMPLETO",
+                confirmacao=True,
+            )
+        self.application.refresh_from_db()
+        self.assertEqual(
+            self.application.estado_atual,
+            Candidatura.Estado.ENCERRAMENTO_PREPARACAO,
+        )
+
+    def test_complete_closure_path_supports_additional_elements(self):
+        self._submit_closure()
+        aplicar_transicao(
+            candidatura_id=self.application.pk,
+            codigo="TR-017",
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="analise-encerramento",
+            efetiva_em=self.base_time + timedelta(days=8),
+            origem=TransicaoCandidatura.Origem.COMUNICACAO_IEFP,
+            referencia_externa="ANALISE-ENC-001",
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        request_transition, request = registar_pedido_elementos(
+            candidatura_id=self.application.pk,
+            questoes=[{"texto": "Confirme o comprovativo final."}],
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="pedido-final",
+            recebido_em=self.base_time + timedelta(days=9),
+            referencia_externa="PEDIDO-ENC-001",
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        question = request.questoes.get()
+        guardar_resposta_rascunho(
+            questao_id=question.pk,
+            utilizador=self.manager,
+            texto="Comprovativo confirmado.",
+        )
+        response_transition = registar_resposta_completa(
+            pedido_id=request.pk,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="resposta-final",
+            efetiva_em=self.base_time + timedelta(days=10),
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        conclusion = registar_conclusao_encerramento(
+            candidatura_id=self.application.pk,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="conclusao-final",
+            efetiva_em=self.base_time + timedelta(days=11),
+            resultado_final=PedidoEncerramento.ResultadoFinal.CONCLUIDO,
+            referencia_externa="DEC-ENC-001",
+            evidencia=self.evidence,
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        with self.assertRaises(ValidationError):
+            confirmar_regularizacao_financeira(
+                candidatura_id=self.application.pk,
+                utilizador=self.manager,
+                versao_esperada=self.application.versao,
+                chave_idempotencia="regularizacao-pendente",
+                efetiva_em=self.base_time + timedelta(days=12),
+                regularizacao_confirmada=False,
+                confirmacao=True,
+            )
+        closing = confirmar_regularizacao_financeira(
+            candidatura_id=self.application.pk,
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="regularizacao-confirmada",
+            efetiva_em=self.base_time + timedelta(days=12),
+            regularizacao_confirmada=True,
+            referencia_externa="PAG-001",
+            evidencia=self.evidence,
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+
+        self.assertEqual(request_transition.codigo, "TR-018")
+        self.assertEqual(request.fase, PedidoElementos.Fase.ENCERRAMENTO)
+        self.assertEqual(response_transition.codigo, "TR-019")
+        self.assertEqual(conclusion.codigo, "TR-020")
+        self.assertEqual(closing.codigo, "TR-021")
+        self.assertEqual(self.application.estado_atual, Candidatura.Estado.ENCERRADA)
+        self.assertEqual(
+            self.application.pedido_encerramento.estado,
+            PedidoEncerramento.Estado.CONCLUIDO,
+        )
+        self.assertTrue(
+            self.application.snapshots_submissao.filter(
+                finalidade=SnapshotSubmissao.Finalidade.ENCERRAMENTO
+            ).exists()
+        )
+
+    def test_revocation_and_admin_correction_preserve_history(self):
+        self._accept_term()
+        revoked = aplicar_transicao(
+            candidatura_id=self.application.pk,
+            codigo="TR-022",
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="revogar",
+            efetiva_em=self.base_time + timedelta(days=6),
+            origem=TransicaoCandidatura.Origem.COMUNICACAO_IEFP,
+            referencia_externa="REV-001",
+            motivo="Revogação comunicada pelo IEFP.",
+            evidencia=self.evidence,
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+        with self.assertRaises(PermissionDenied):
+            corrigir_estado_terminal(
+                candidatura_id=self.application.pk,
+                utilizador=self.manager,
+                versao_esperada=self.application.versao,
+                chave_idempotencia="corrigir-sem-permissao",
+                efetiva_em=self.base_time + timedelta(days=7),
+                motivo="Tentativa sem perfil administrativo.",
+                confirmacao=True,
+            )
+        correction = corrigir_estado_terminal(
+            candidatura_id=self.application.pk,
+            utilizador=self.administrator,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="corrigir-revogacao",
+            efetiva_em=self.base_time + timedelta(days=7),
+            motivo="A comunicação foi associada ao processo errado.",
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+
+        self.assertEqual(correction.codigo, "TR-023")
+        self.assertEqual(correction.corrige_transicao, revoked)
+        self.assertTrue(self.application.transicoes.filter(pk=revoked.pk).exists())
+        self.assertEqual(
+            self.application.estado_atual,
+            Candidatura.Estado.APROVADA_ACOMPANHAMENTO,
+        )
+        self.assertFalse(
+            self.application.beneficiarios.filter(
+                resultado=BeneficiarioCandidatura.Resultado.REVOGADA
+            ).exists()
+        )
+
+    def test_extinction_requires_official_evidence_and_blocks_document_changes(self):
+        self._approve_application()
+        with self.assertRaises(ValidationError):
+            aplicar_transicao(
+                candidatura_id=self.application.pk,
+                codigo="TR-014",
+                utilizador=self.manager,
+                versao_esperada=self.application.versao,
+                chave_idempotencia="extincao-sem-evidencia",
+                efetiva_em=self.base_time + timedelta(days=1),
+                origem=TransicaoCandidatura.Origem.COMUNICACAO_IEFP,
+                motivo="Termo não devolvido.",
+                confirmacao=True,
+            )
+        extinction = aplicar_transicao(
+            candidatura_id=self.application.pk,
+            codigo="TR-014",
+            utilizador=self.manager,
+            versao_esperada=self.application.versao,
+            chave_idempotencia="extincao-oficial",
+            efetiva_em=self.base_time + timedelta(days=1),
+            origem=TransicaoCandidatura.Origem.COMUNICACAO_IEFP,
+            referencia_externa="EXT-001",
+            motivo="Termo não devolvido.",
+            evidencia=self.evidence,
+            confirmacao=True,
+        )
+        self.application.refresh_from_db()
+
+        self.assertEqual(extinction.codigo, "TR-014")
+        self.assertEqual(self.application.estado_atual, Candidatura.Estado.EXTINTA)
+        with self.assertRaises(PermissionDenied):
+            carregar_documento_workflow(
+                candidatura_id=self.application.pk,
+                tipo_documento=self.document_types["COMUNICACAO_IEFP"],
+                ficheiro=pdf_upload("alteracao-terminal.pdf"),
+                utilizador=self.manager,
+            )
 
     def test_snapshot_type_is_the_submission_snapshot(self):
         submission, _ = self._submit_and_analyse()

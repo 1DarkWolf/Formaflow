@@ -40,17 +40,74 @@
         {% for acao in acoes %}
           {% if acao.codigo == "TR-007" %}
             <a class="button button-primary" href="{% url 'workflow:novo_pedido' candidatura.public_id %}">{{ acao.designacao }}</a>
+          {% elif acao.codigo == "TR-018" %}
+            <a class="button button-primary" href="{% url 'workflow:novo_pedido' candidatura.public_id %}">{{ acao.designacao }}</a>
           {% elif acao.codigo == "TR-009" %}
             <a class="button button-primary" href="{% url 'workflow:decisao' candidatura.public_id %}">Registar decisão por beneficiário</a>
+          {% elif acao.codigo == "TR-013" %}
+            <a class="button button-primary" href="{% url 'workflow:termo' candidatura.public_id %}">Receber ou validar termo</a>
+          {% elif acao.codigo == "TR-015" %}
+            <a class="button button-primary" href="{% url 'workflow:iniciar_encerramento' candidatura.public_id %}">{{ acao.designacao }}</a>
+          {% elif acao.codigo == "TR-016" %}
+            <a class="button button-primary" href="{% url 'workflow:submissao_encerramento' candidatura.public_id %}">{{ acao.designacao }}</a>
+          {% elif acao.codigo == "TR-020" %}
+            <a class="button button-primary" href="{% url 'workflow:conclusao_encerramento' candidatura.public_id %}">{{ acao.designacao }}</a>
+          {% elif acao.codigo == "TR-021" %}
+            <a class="button button-primary" href="{% url 'workflow:regularizacao_financeira' candidatura.public_id %}">{{ acao.designacao }}</a>
+          {% elif acao.codigo == "TR-023" %}
+            <a class="button button-secondary" href="{% url 'workflow:correcao_terminal' candidatura.public_id %}">{{ acao.designacao }}</a>
           {% else %}
-            <a class="button {% if acao.codigo == 'TR-005' or acao.codigo == 'TR-012' %}button-secondary{% else %}button-primary{% endif %}" href="{% url 'workflow:acontecimento' candidatura.public_id acao.codigo %}">{{ acao.designacao }}</a>
+            <a class="button {% if acao.codigo == 'TR-005' or acao.codigo == 'TR-012' or acao.codigo == 'TR-014' or acao.codigo == 'TR-022' %}button-secondary{% else %}button-primary{% endif %}" href="{% url 'workflow:acontecimento' candidatura.public_id acao.codigo %}">{{ acao.designacao }}</a>
           {% endif %}
         {% endfor %}
       </div>
     </section>
   {% endif %}
 
-  {% if pode_operar and candidatura.estado_atual != "RASCUNHO" and candidatura.estado_atual != "PRONTA_SUBMISSAO" %}
+  {% if termo %}
+    <section class="application-section" aria-labelledby="termo-workflow">
+      <p class="eyebrow">Aceitação</p>
+      <h2 id="termo-workflow">Termo de aceitação</h2>
+      <div class="workflow-record state-{{ termo.estado|lower }}">
+        <span>{{ termo.get_estado_display }}{% if termo.fora_prazo %} · recebido fora de prazo{% endif %}</span>
+        <strong>Limite {{ termo.data_limite|date:"d/m/Y H:i" }}</strong>
+        {% if termo.recebido_em %}<p>Recebido em {{ termo.recebido_em|date:"d/m/Y H:i" }}</p>{% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if participacoes %}
+    <section class="application-section" aria-labelledby="formacao-workflow">
+      <p class="eyebrow">Execução</p>
+      <h2 id="formacao-workflow">Participações deferidas</h2>
+      <div class="workflow-grid">
+        {% for participacao in participacoes %}
+          <article class="workflow-record">
+            <span>{{ participacao.get_estado_display }}</span>
+            <strong>{{ participacao.beneficiario.candidato }}</strong>
+            <p>{{ participacao.acao_formacao.designacao }}</p>
+            {% if candidatura.estado_atual == "APROVADA_ACOMPANHAMENTO" and pode_operar %}
+              <a class="text-link" href="{% url 'workflow:participacao' participacao.pk %}">Atualizar execução</a>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if encerramento %}
+    <section class="application-section" aria-labelledby="encerramento-workflow">
+      <p class="eyebrow">Fase final</p>
+      <h2 id="encerramento-workflow">Pedido de encerramento</h2>
+      <div class="workflow-record state-{{ encerramento.estado|lower }}">
+        <span>{{ encerramento.get_estado_display }}</span>
+        <strong>{{ encerramento.referencia_externa|default:"Referência ainda não atribuída" }}</strong>
+        {% if encerramento.resultado_final %}<p>Resultado: {{ encerramento.get_resultado_final_display }}</p>{% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if pode_operar and candidatura.estado_atual != "RASCUNHO" and candidatura.estado_atual != "PRONTA_SUBMISSAO" and candidatura.estado_atual != "ENCERRADA" and candidatura.estado_atual != "INDEFERIDA" and candidatura.estado_atual != "ARQUIVADA" and candidatura.estado_atual != "DESISTIDA" and candidatura.estado_atual != "EXTINTA" and candidatura.estado_atual != "REVOGADA" %}
     <div class="notice-inline">
       Recebeu uma comunicação ou um documento pedido durante a análise?
       <a class="text-link" href="{% url 'workflow:novo_documento' candidatura.public_id %}">Guardar documento de acompanhamento</a>
@@ -119,6 +176,7 @@
             <p>{{ transicao.efetiva_em|date:"d/m/Y H:i" }} · {{ transicao.get_origem_display }}{% if transicao.ator %} · {{ transicao.ator }}{% endif %}</p>
             {% if transicao.referencia_externa %}<p>Referência: {{ transicao.referencia_externa }}</p>{% endif %}
             {% if transicao.motivo %}<p>Motivo: {{ transicao.motivo }}</p>{% endif %}
+            {% if transicao.corrige_transicao %}<p>Corrige {{ transicao.corrige_transicao.codigo }} sem eliminar o registo original.</p>{% endif %}
           </div>
         </li>
       {% empty %}
