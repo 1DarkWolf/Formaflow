@@ -40,10 +40,10 @@ jobs:
 
     steps:
       - name: Obter código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Preparar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -75,13 +75,42 @@ jobs:
 
       - name: Ensaiar dados offline e alertas
         run: |
-          python manage.py carregar_cenario_demonstracao --settings=config.settings.test
-          python manage.py carregar_cenario_demonstracao --settings=config.settings.test
-          python manage.py processar_alertas --settings=config.settings.test
+          run_checked() {
+            local label="$1"
+            shift
+            local output status escaped
+            set +e
+            output=$("$@" 2>&1)
+            status=$?
+            set -e
+            printf '%s\n' "$output"
+            if [ "$status" -ne 0 ]; then
+              escaped=$(printf '%s' "$output" | tail -c 6000)
+              escaped=${escaped//'%'/'%25'}
+              escaped=${escaped//$'\r'/'%0D'}
+              escaped=${escaped//$'\n'/'%0A'}
+              echo "::error title=$label::$escaped"
+              return "$status"
+            fi
+          }
+          run_checked "Falha no primeiro carregamento PostgreSQL" python manage.py carregar_cenario_demonstracao --settings=config.settings.test
+          run_checked "Falha no segundo carregamento PostgreSQL" python manage.py carregar_cenario_demonstracao --settings=config.settings.test
+          run_checked "Falha no processamento de alertas" python manage.py processar_alertas --settings=config.settings.test
 
       - name: Executar testes e cobertura
         run: |
-          python -m coverage run manage.py test --settings=config.settings.test
+          set +e
+          python -m coverage run manage.py test --settings=config.settings.test 2>&1 | tee /tmp/formaflow-tests.log
+          test_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$test_status" -ne 0 ]; then
+            escaped=$(tail -c 6000 /tmp/formaflow-tests.log)
+            escaped=${escaped//'%'/'%25'}
+            escaped=${escaped//$'\r'/'%0D'}
+            escaped=${escaped//$'\n'/'%0A'}
+            echo "::error title=Falha nos testes PostgreSQL::$escaped"
+            exit "$test_status"
+          fi
           python -m coverage report --fail-under=80
           python -m unittest discover -s scripts/tests -v
 
