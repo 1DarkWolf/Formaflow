@@ -39,8 +39,8 @@ A [execução 33799105775](https://github.com/1DarkWolf/Formaflow/actions/runs/3
 - A imagem Docker não foi construída localmente porque o executável não está instalado nesta máquina.
 - Não foi criado alojamento público, domínio ou certificado; essa alteração continua sujeita a autorização própria.
 - Não foram usados dados reais nem efetuadas chamadas ao Iefponline.
-- O relatório Word e a apresentação PowerPoint originais estão fora do repositório e devem ser sincronizados com o plano de demonstração antes da entrega escolar final.
+- Os ficheiros originais foram preservados fora do repositório; as versões finais sincronizadas e revistas estão em `docs/academico/`.
 
 ## 5. Aceitação técnica
 
-A entrega satisfaz os portões automatizados definidos para o repositório, incluindo o workflow PostgreSQL/Docker. Antes da entrega escolar final permanece necessária a revisão humana do percurso de demonstração e dos artefactos académicos externos.
+A entrega satisfaz os portões automatizados definidos para o repositório, incluindo o workflow PostgreSQL/Docker. O relatório e a apresentação finais foram sincronizados com o estado real da aplicação e revistos visualmente. Antes da apresentação escolar recomenda-se apenas um ensaio humano do percurso de demonstração.

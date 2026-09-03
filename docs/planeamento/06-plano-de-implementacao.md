@@ -374,7 +374,7 @@ Concluído quando:
 
 Objetivo: preparar uma entrega reproduzível da PAP.
 
-Estado: **implementação técnica concluída em 3 de setembro de 2026; falta sincronizar os artefactos externos da PAP**.
+Estado: **concluído em 3 de setembro de 2026, incluindo a sincronização dos artefactos académicos da PAP**.
 
 Entregáveis implementados:
 
@@ -392,7 +392,7 @@ Critérios verificados:
 - [x] `check --deploy --fail-level WARNING` não apresenta bloqueios;
 - [x] o percurso de demonstração funciona sem Internet externa;
 - [x] existe procedimento de recuperação documentado e automatizado;
-- [ ] o relatório e a apresentação externos são atualizados a partir do plano de demonstração da entrega.
+- [x] o relatório e a apresentação são atualizados a partir do plano de demonstração da entrega e guardados em `docs/academico/`.
 
 ## 7. Ordem de pedidos depois da autorização
 
