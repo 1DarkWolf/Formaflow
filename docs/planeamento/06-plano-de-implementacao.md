@@ -347,22 +347,24 @@ Concluído quando:
 
 Objetivo: tornar o acompanhamento diário e a demonstração claros.
 
-Entregáveis futuros:
+Estado: **concluído em 3 de setembro de 2026**.
 
-- dashboard filtrado por papel;
-- filtros, paginação, checklist e próxima ação;
-- comando idempotente de prazos e alertas;
-- notificações internas e email opcional;
-- exportações mínimas autorizadas;
-- consultas otimizadas e índices comprovados.
+Entregáveis implementados:
+
+- [x] dashboard filtrado por papel;
+- [x] filtros, paginação, checklist e próxima ação;
+- [x] comando idempotente de prazos e alertas;
+- [x] notificações internas e email opcional;
+- [x] exportações mínimas autorizadas;
+- [x] consultas otimizadas e índices comprovados.
 
 Concluído quando:
 
-- cada perfil vê apenas informação útil e autorizada;
-- indicadores são reconstruíveis das fontes de verdade;
-- executar o comando duas vezes não duplica avisos;
-- listas principais não geram consultas repetidas por linha;
-- exportações são auditadas e não incluem campos desnecessários.
+- [x] cada perfil vê apenas informação útil e autorizada;
+- [x] indicadores são reconstruíveis das fontes de verdade;
+- [x] executar o comando duas vezes não duplica avisos;
+- [x] listas principais não geram consultas repetidas por linha;
+- [x] exportações são auditadas e não incluem campos desnecessários.
 
 ### IMP-09 — Robustez, demonstração e publicação
 

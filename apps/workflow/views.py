@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
@@ -30,7 +31,14 @@ from .forms import (
     FormularioSubmissaoEncerramento,
     FormularioTermoRecebido,
 )
-from .models import PedidoElementos, QuestaoPedido, TermoAceitacao, TransicaoCandidatura
+from .models import (
+    Notificacao,
+    PedidoElementos,
+    QuestaoPedido,
+    TermoAceitacao,
+    TransicaoCandidatura,
+)
+from .notifications import marcar_notificacao_lida, resolver_notificacao
 from .selectors import (
     pedidos_visiveis_por,
     proxima_acao,
@@ -66,6 +74,49 @@ CODIGOS_GERAIS = {
     "TR-017",
     "TR-022",
 }
+
+
+@login_required
+@require_safe
+def notificacoes(request):
+    queryset = request.user.notificacoes.select_related("candidatura", "tarefa", "prazo")
+    estado = str(request.GET.get("estado", "")).strip().upper()
+    prioridade = str(request.GET.get("prioridade", "")).strip().upper()
+    if estado in {value for value, _label in Notificacao.Estado.choices}:
+        queryset = queryset.filter(estado=estado)
+    else:
+        estado = ""
+    if prioridade in {value for value, _label in Notificacao.Prioridade.choices}:
+        queryset = queryset.filter(prioridade=prioridade)
+    else:
+        prioridade = ""
+    page = Paginator(queryset, 15).get_page(request.GET.get("page"))
+    return render(
+        request,
+        "workflow/notificacoes.html",
+        {
+            "notificacoes": page,
+            "filtros": {"estado": estado, "prioridade": prioridade},
+            "estados": Notificacao.Estado.choices,
+            "prioridades": Notificacao.Prioridade.choices,
+        },
+    )
+
+
+@login_required
+@require_POST
+def ler_notificacao(request, notificacao_id):
+    marcar_notificacao_lida(notificacao_id=notificacao_id, utilizador=request.user)
+    messages.success(request, "O aviso foi marcado como lido.")
+    return redirect("workflow:notificacoes")
+
+
+@login_required
+@require_POST
+def resolver_aviso(request, notificacao_id):
+    resolver_notificacao(notificacao_id=notificacao_id, utilizador=request.user)
+    messages.success(request, "O aviso foi resolvido.")
+    return redirect("workflow:notificacoes")
 
 
 def _obter_candidatura(user, public_id):

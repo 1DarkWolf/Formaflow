@@ -518,6 +518,7 @@ class Prazo(ModeloTemporal):
         ordering = ("limite_calculado", "pk")
         indexes = [
             models.Index(fields=("estado", "limite_calculado"), name="workflow_prazo_alerta_idx"),
+            models.Index(fields=("estado", "limite_oficial"), name="workflow_prazo_oficial_idx"),
         ]
         constraints = [
             models.CheckConstraint(
@@ -710,6 +711,16 @@ class Tarefa(ModeloTemporal):
         verbose_name = "tarefa"
         verbose_name_plural = "tarefas"
         ordering = ("-prioridade", "data_limite", "pk")
+        indexes = [
+            models.Index(
+                fields=("atribuida_a", "estado", "data_limite"),
+                name="workflow_tarefa_painel_idx",
+            ),
+            models.Index(
+                fields=("candidatura", "estado", "data_limite"),
+                name="workflow_tarefa_cand_idx",
+            ),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=("chave_deduplicacao",),
@@ -805,6 +816,12 @@ class Notificacao(ModeloTemporal):
         verbose_name = "notificação"
         verbose_name_plural = "notificações"
         ordering = ("-criado_em",)
+        indexes = [
+            models.Index(
+                fields=("destinatario", "estado", "criado_em"),
+                name="workflow_notif_painel_idx",
+            ),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=("destinatario", "chave_deduplicacao"),

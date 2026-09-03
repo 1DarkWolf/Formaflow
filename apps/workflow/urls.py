@@ -5,6 +5,17 @@ from . import views
 app_name = "workflow"
 
 urlpatterns = [
+    path("notificacoes/", views.notificacoes, name="notificacoes"),
+    path(
+        "notificacoes/<int:notificacao_id>/ler/",
+        views.ler_notificacao,
+        name="ler_notificacao",
+    ),
+    path(
+        "notificacoes/<int:notificacao_id>/resolver/",
+        views.resolver_aviso,
+        name="resolver_aviso",
+    ),
     path("<uuid:public_id>/", views.detalhe, name="detalhe"),
     path(
         "<uuid:public_id>/acontecimento/<str:codigo>/",

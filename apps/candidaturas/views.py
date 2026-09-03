@@ -1,7 +1,12 @@
+import csv
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST, require_safe
 
@@ -16,6 +21,7 @@ from .models import Candidatura
 from .selectors import (
     beneficiarios_visiveis_por,
     candidaturas_visiveis_por,
+    filtrar_candidaturas,
     utilizador_pode_editar_candidatura,
 )
 from .services import (
@@ -98,7 +104,77 @@ def lista(request):
         "titular_empresa",
         "conjunto_regras",
     )
-    return render(request, "candidaturas/lista.html", {"candidaturas": applications})
+    applications, filters = filtrar_candidaturas(applications, request.GET)
+    page = Paginator(applications, 12).get_page(request.GET.get("page"))
+    query_filters = urlencode({key: value for key, value in filters.items() if value})
+    return render(
+        request,
+        "candidaturas/lista.html",
+        {
+            "candidaturas": page,
+            "filtros": filters,
+            "estados": Candidatura.Estado.choices,
+            "tipos": Candidatura.Tipo.choices,
+            "query_filtros": query_filters,
+        },
+    )
+
+
+@login_required
+@require_safe
+def exportar_csv(request):
+    from apps.auditoria.services import registar_evento
+    from apps.workflow.selectors import proxima_acao
+
+    applications = candidaturas_visiveis_por(request.user).select_related(
+        "titular_candidato__utilizador",
+        "titular_empresa",
+    )
+    applications, filters = filtrar_candidaturas(applications, request.GET)
+    rows = list(applications)
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="candidaturas-formaflow.csv"'
+    response.write("\ufeff")
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow(
+        [
+            "Identificador",
+            "Tipo",
+            "Estado",
+            "Resultado",
+            "Submetida em",
+            "Próxima ação",
+        ]
+    )
+    for application in rows:
+        writer.writerow(
+            [
+                application.public_id,
+                application.get_tipo_display(),
+                application.get_estado_atual_display(),
+                application.get_resultado_decisao_display(),
+                application.submetida_em.isoformat() if application.submetida_em else "",
+                proxima_acao(application),
+            ]
+        )
+
+    registar_evento(
+        acao="EXPORTAR_CANDIDATURAS_CSV",
+        tipo_objeto="Candidatura",
+        utilizador=request.user,
+        request=request,
+        metadados={
+            "formato": "CSV",
+            "quantidade": len(rows),
+            "filtros": {
+                "estado": filters["estado"],
+                "tipo": filters["tipo"],
+                "pesquisa_aplicada": bool(filters["q"]),
+            },
+        },
+    )
+    return response
 
 
 @login_required

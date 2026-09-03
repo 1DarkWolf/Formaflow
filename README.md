@@ -4,9 +4,9 @@ Sistema web de controlo, acompanhamento e avisos para processos do Cheque-Forma�
 
 ## Estado do projeto
 
-A implementação concluiu os incrementos `IMP-00` a `IMP-07`, desde a base do projeto até ao circuito financeiro da candidatura.
+A implementação concluiu os incrementos `IMP-00` a `IMP-08`, desde a base do projeto até ao painel, alertas e relatórios do MVP.
 
-Estão disponíveis autenticação por email, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-023`, termo de aceitação, execução das formações, snapshots, prazos, suspensões, pedidos finais, decisões por beneficiário, revogação e correções auditáveis sem executar decisões no Iefponline. O circuito financeiro separa estimativas, decisões oficiais, movimentos efetivos e restituições. O próximo incremento é o `IMP-08`, dedicado ao dashboard, alertas e relatórios do MVP.
+Estão disponíveis autenticação por email, organizações com âmbito de acesso, regras imutáveis e candidaturas individuais ou empresariais preparadas por etapas. A checklist documental mantém PDFs privados e versões; o workflow regista `TR-001` a `TR-023`, termo de aceitação, execução das formações, snapshots, prazos, suspensões, pedidos finais, decisões por beneficiário, revogação e correções auditáveis sem executar decisões no Iefponline. O circuito financeiro separa estimativas, decisões oficiais, movimentos efetivos e restituições. O painel é adaptado ao perfil, os avisos de prazo são idempotentes e a exportação CSV autorizada deixa um registo imutável. O próximo incremento é o `IMP-09`, dedicado à robustez, demonstração e publicação.
 
 ## Requisitos
 
@@ -37,6 +37,14 @@ python manage.py runserver
 ```
 
 O comando `carregar_dados_demonstracao` é idempotente e cria apenas referências claramente fictícias: uma empresa, uma entidade formadora, parâmetros, tipos documentais e feriados. O conjunto de regras fica em rascunho e deve ser revisto e publicado em `/regras/` antes de criar uma candidatura. O comando `createsuperuser` cria a primeira conta com acesso à administração técnica. No ambiente local, as mensagens de ativação e recuperação são apresentadas no terminal e não são enviadas para endereços reais.
+
+Para atualizar diariamente os avisos de prazo, execute ou agende:
+
+```powershell
+python manage.py processar_alertas
+```
+
+Os avisos internos estão sempre disponíveis. O envio adicional por email fica desativado por omissão; para o ativar, configure `NOTIFICATION_EMAIL_ENABLED=true` e um backend de email adequado ao ambiente.
 
 Em desenvolvimento, as chaves de proteção de dados são derivadas da chave do Django quando `DATA_ENCRYPTION_KEY` e `DATA_HASH_KEY` ficam vazias. Em produção, defina valores independentes e secretos. Pode gerar valores adequados com:
 
@@ -96,9 +104,11 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17.
 - `/conta/recuperar/` — recuperação de palavra-passe;
 - `/conta/painel/` — painel autenticado;
 - `/candidaturas/` — candidaturas visíveis e assistente de preparação;
+- `/candidaturas/exportar.csv` — relatório CSV mínimo, filtrado pelo mesmo âmbito;
 - `/candidaturas/nova/` — criação de rascunho individual ou empresarial;
 - `/documentos/candidatura/<uuid>/` — checklist e comprovativos privados da candidatura;
 - `/workflow/<uuid>/` — acompanhamento, termo, execução, encerramento e histórico imutável;
+- `/workflow/notificacoes/` — central pessoal de avisos;
 - `/organizacoes/empresas/` — empresas visíveis no âmbito do utilizador;
 - `/regras/` — versões de regras visíveis e publicação autorizada;
 - `/admin/` — administração técnica para contas autorizadas.

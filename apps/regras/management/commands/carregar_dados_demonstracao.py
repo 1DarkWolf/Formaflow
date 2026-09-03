@@ -163,6 +163,27 @@ PARAMETROS = (
         2,
         "anos",
     ),
+    (
+        "CFG-ALERTA-DIAS-UTEIS",
+        "Limiares de aviso para prazos em dias úteis",
+        ParametroRegra.TipoValor.JSON,
+        [5, 2, 0],
+        "dias_uteis",
+    ),
+    (
+        "CFG-ALERTA-DIAS-CONSECUTIVOS",
+        "Limiares de aviso para prazos consecutivos",
+        ParametroRegra.TipoValor.JSON,
+        [15, 7, 3, 1, 0],
+        "dias_consecutivos",
+    ),
+    (
+        "CFG-ALERTA-ENCERRAMENTO",
+        "Limiares de aviso para encerramento",
+        ParametroRegra.TipoValor.JSON,
+        [30, 15, 7, 3, 1, 0],
+        "dias_consecutivos",
+    ),
 )
 
 TIPOS_DOCUMENTO = (

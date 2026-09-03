@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "apps.documentos.apps.DocumentosConfig",
     "apps.workflow.apps.WorkflowConfig",
     "apps.financeiro.apps.FinanceiroConfig",
+    "apps.auditoria.apps.AuditoriaConfig",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +90,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.workflow.context_processors.avisos_cabecalho",
             ],
         },
     },
@@ -146,6 +148,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Forma Flow <noreply@example.test>")
+NOTIFICATION_EMAIL_ENABLED = env_bool("NOTIFICATION_EMAIL_ENABLED", False)
 
 LOGGING = {
     "version": 1,

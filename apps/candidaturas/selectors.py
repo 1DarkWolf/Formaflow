@@ -49,6 +49,65 @@ def candidaturas_visiveis_por(user, *, no_momento=None):
     ).distinct()
 
 
+def candidaturas_operacionais_por(user, *, no_momento=None):
+    if not _utilizador_ativo(user):
+        return Candidatura.objects.none()
+    if utilizador_e_administrador(user):
+        return Candidatura.objects.all()
+    moment = no_momento or timezone.now()
+    managed_company_ids = (
+        AssociacaoEmpresa.objects.vigentes(moment)
+        .filter(
+            utilizador=user,
+            papel__in=(
+                AssociacaoEmpresa.Papel.GESTOR,
+                AssociacaoEmpresa.Papel.RECURSOS_HUMANOS,
+            ),
+        )
+        .values("empresa_id")
+    )
+    assignment_ids = (
+        _atribuicoes_vigentes(moment)
+        .filter(
+            utilizador=user,
+            papel__in=(
+                AtribuicaoCandidatura.Papel.RESPONSAVEL,
+                AtribuicaoCandidatura.Papel.COLABORADOR,
+            ),
+        )
+        .values("candidatura_id")
+    )
+    return Candidatura.objects.filter(
+        Q(titular_empresa_id__in=managed_company_ids) | Q(pk__in=assignment_ids)
+    ).distinct()
+
+
+def filtrar_candidaturas(queryset, parametros):
+    estado = str(parametros.get("estado", "")).strip().upper()
+    tipo = str(parametros.get("tipo", "")).strip().upper()
+    pesquisa = str(parametros.get("q", "")).strip()[:100]
+
+    estados_validos = {value for value, _label in Candidatura.Estado.choices}
+    tipos_validos = {value for value, _label in Candidatura.Tipo.choices}
+    if estado in estados_validos:
+        queryset = queryset.filter(estado_atual=estado)
+    else:
+        estado = ""
+    if tipo in tipos_validos:
+        queryset = queryset.filter(tipo=tipo)
+    else:
+        tipo = ""
+    if pesquisa:
+        queryset = queryset.filter(
+            Q(referencia_externa__icontains=pesquisa)
+            | Q(titular_empresa__denominacao_legal__icontains=pesquisa)
+            | Q(titular_empresa__nome_comercial__icontains=pesquisa)
+            | Q(titular_candidato__utilizador__nome_proprio__icontains=pesquisa)
+            | Q(titular_candidato__utilizador__apelido__icontains=pesquisa)
+        )
+    return queryset.distinct(), {"estado": estado, "tipo": tipo, "q": pesquisa}
+
+
 def utilizador_pode_operar_candidatura(user, candidatura, *, no_momento=None):
     if not _utilizador_ativo(user):
         return False

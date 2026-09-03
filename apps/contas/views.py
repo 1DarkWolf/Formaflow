@@ -6,6 +6,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_GET, require_http_methods, require_safe
 
+from .dashboard import construir_dashboard
 from .emails import enviar_email_ativacao
 from .forms import FormularioRegistoCandidato
 from .models import Utilizador
@@ -58,4 +59,6 @@ def dashboard(request):
     papeis = list(request.user.groups.order_by("name").values_list("name", flat=True))
     if request.user.is_superuser and "Administrador" not in papeis:
         papeis.insert(0, "Administrador")
-    return render(request, "contas/dashboard.html", {"papeis": papeis})
+    context = construir_dashboard(request.user)
+    context["papeis"] = papeis
+    return render(request, "contas/dashboard.html", context)

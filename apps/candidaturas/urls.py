@@ -6,6 +6,7 @@ app_name = "candidaturas"
 
 urlpatterns = [
     path("", views.lista, name="lista"),
+    path("exportar.csv", views.exportar_csv, name="exportar_csv"),
     path("nova/", views.nova, name="nova"),
     path("<uuid:public_id>/", views.detalhe, name="detalhe"),
     path(
