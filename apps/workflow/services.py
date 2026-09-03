@@ -436,7 +436,7 @@ def aplicar_transicao(
     code = str(codigo).strip().upper()
     key = _normalizar_chave(chave_idempotencia)
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related(
             "titular_candidato__utilizador",
             "titular_empresa",
@@ -586,7 +586,7 @@ def registar_pedido_elementos(
 ):
     key = _normalizar_chave(chave_idempotencia)
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -711,7 +711,7 @@ def registar_pedido_elementos(
 @transaction.atomic
 def guardar_resposta_rascunho(*, questao_id, utilizador, texto="", versoes_documentos=()):
     question = (
-        QuestaoPedido.objects.select_for_update()
+        QuestaoPedido.objects.select_for_update(of=("self",))
         .select_related(
             "pedido__candidatura__titular_empresa",
             "pedido__candidatura__titular_candidato",
@@ -784,7 +784,7 @@ def registar_resposta_completa(
     confirmacao=False,
 ):
     request = (
-        PedidoElementos.objects.select_for_update()
+        PedidoElementos.objects.select_for_update(of=("self",))
         .select_related(
             "candidatura__titular_candidato__utilizador",
             "candidatura__titular_empresa",
@@ -896,7 +896,7 @@ def registar_decisao(
     confirmacao=False,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -1027,7 +1027,7 @@ def associar_termo_recebido(
     justificacao="",
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato", "titular_empresa")
         .get(pk=candidatura_id)
     )
@@ -1097,7 +1097,7 @@ def confirmar_termo_aceite(
     confirmacao=False,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -1114,7 +1114,7 @@ def confirmar_termo_aceite(
         reason="",
     )
     term = (
-        TermoAceitacao.objects.select_for_update()
+        TermoAceitacao.objects.select_for_update(of=("self",))
         .select_related("documento")
         .get(candidatura=candidature)
     )
@@ -1187,7 +1187,7 @@ def registar_resultado_participacao(
     motivo="",
 ):
     participation = (
-        ParticipacaoFormacao.objects.select_for_update()
+        ParticipacaoFormacao.objects.select_for_update(of=("self",))
         .select_related(
             "beneficiario__candidatura__titular_candidato",
             "beneficiario__candidatura__titular_empresa",
@@ -1369,7 +1369,7 @@ def iniciar_preparacao_encerramento(
     confirmacao=False,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -1443,7 +1443,7 @@ def submeter_encerramento(
     confirmacao=False,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -1542,7 +1542,7 @@ def registar_conclusao_encerramento(
     confirmacao=False,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -1615,7 +1615,7 @@ def confirmar_regularizacao_financeira(
     confirmacao=False,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -1684,7 +1684,7 @@ def corrigir_estado_terminal(
     confirmacao=False,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato__utilizador", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -1794,7 +1794,7 @@ def corrigir_estado_terminal(
 @transaction.atomic
 def corrigir_limite_prazo(*, prazo_id, utilizador, novo_limite, motivo):
     deadline = (
-        Prazo.objects.select_for_update()
+        Prazo.objects.select_for_update(of=("self",))
         .select_related("candidatura__titular_empresa", "candidatura__titular_candidato")
         .get(pk=prazo_id)
     )

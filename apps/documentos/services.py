@@ -149,7 +149,7 @@ def _tipos_necessarios(candidatura):
 @transaction.atomic
 def gerar_checklist_preparacao(*, candidatura_id, utilizador):
     candidatura = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("conjunto_regras")
         .prefetch_related("beneficiarios__participacoes_formacao")
         .get(pk=candidatura_id)
@@ -324,7 +324,7 @@ def substituir_documento(
         key, stored_file = _guardar_ficheiro_validado(ficheiro, document.candidatura, utilizador)
         with transaction.atomic():
             document = (
-                Documento.objects.select_for_update()
+                Documento.objects.select_for_update(of=("self",))
                 .select_related("requisito")
                 .get(pk=document.pk)
             )
@@ -433,7 +433,7 @@ def carregar_documento_workflow(
 @transaction.atomic
 def validar_versao(*, versao_id, utilizador, resultado, observacao=""):
     version = (
-        VersaoDocumento.objects.select_for_update()
+        VersaoDocumento.objects.select_for_update(of=("self",))
         .select_related("documento__candidatura", "documento__requisito")
         .get(pk=versao_id)
     )
@@ -477,7 +477,7 @@ def validar_versao(*, versao_id, utilizador, resultado, observacao=""):
 @transaction.atomic
 def dispensar_requisito(*, requisito_id, utilizador, motivo):
     requirement = (
-        RequisitoDocumento.objects.select_for_update()
+        RequisitoDocumento.objects.select_for_update(of=("self",))
         .select_related("candidatura")
         .get(pk=requisito_id)
     )
@@ -508,7 +508,7 @@ def criar_snapshot(
     transicao=None,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("titular_candidato", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )

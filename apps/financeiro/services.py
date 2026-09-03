@@ -251,7 +251,7 @@ def calcular_estimativas_candidatura(
     apoios_sociais=None,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("conjunto_regras", "titular_empresa", "titular_candidato")
         .get(pk=candidatura_id)
     )
@@ -623,7 +623,7 @@ def confirmar_valores_oficiais(
     evidencia=None,
 ):
     support = (
-        ApoioFinanceiro.objects.select_for_update()
+        ApoioFinanceiro.objects.select_for_update(of=("self",))
         .select_related("beneficiario__candidatura", "participacao")
         .get(pk=apoio_id)
     )
@@ -669,7 +669,7 @@ def registar_movimento(
     comprovativo=None,
 ):
     support = (
-        ApoioFinanceiro.objects.select_for_update()
+        ApoioFinanceiro.objects.select_for_update(of=("self",))
         .select_related("beneficiario__candidatura")
         .get(pk=apoio_id)
     )
@@ -771,7 +771,7 @@ def registar_restituicao_oficial(
     beneficiario=None,
 ):
     candidature = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related("conjunto_regras")
         .get(pk=candidatura_id)
     )
@@ -872,7 +872,7 @@ def atualizar_restituicao(
     evidencia=None,
 ):
     refund = (
-        Restituicao.objects.select_for_update()
+        Restituicao.objects.select_for_update(of=("self",))
         .select_related("candidatura", "prazo")
         .get(pk=restituicao_id)
     )

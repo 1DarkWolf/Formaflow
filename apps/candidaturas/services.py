@@ -148,7 +148,7 @@ def _limite_beneficiarios(candidatura):
 
 def _bloquear_rascunho(candidatura_id, utilizador, versao_esperada):
     candidatura = (
-        Candidatura.objects.select_for_update()
+        Candidatura.objects.select_for_update(of=("self",))
         .select_related(
             "titular_candidato",
             "titular_empresa",
