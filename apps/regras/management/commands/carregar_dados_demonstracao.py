@@ -199,6 +199,12 @@ TIPOS_DOCUMENTO = (
         TipoDocumento.Categoria.DECISAO,
         TipoDocumento.Sensibilidade.PESSOAL,
     ),
+    (
+        "COMUNICACAO_IEFP",
+        "Comunicação ou notificação do IEFP",
+        TipoDocumento.Categoria.DECISAO,
+        TipoDocumento.Sensibilidade.PESSOAL,
+    ),
 )
 
 

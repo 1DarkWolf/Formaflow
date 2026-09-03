@@ -49,8 +49,8 @@ def candidaturas_visiveis_por(user, *, no_momento=None):
     ).distinct()
 
 
-def utilizador_pode_editar_candidatura(user, candidatura, *, no_momento=None):
-    if not _utilizador_ativo(user) or not candidatura.editavel:
+def utilizador_pode_operar_candidatura(user, candidatura, *, no_momento=None):
+    if not _utilizador_ativo(user):
         return False
     if utilizador_e_administrador(user):
         return True
@@ -78,6 +78,17 @@ def utilizador_pode_editar_candidatura(user, candidatura, *, no_momento=None):
             ),
         )
         .exists()
+    )
+
+
+def utilizador_pode_editar_candidatura(user, candidatura, *, no_momento=None):
+    return bool(
+        candidatura.editavel
+        and utilizador_pode_operar_candidatura(
+            user,
+            candidatura,
+            no_momento=no_momento,
+        )
     )
 
 

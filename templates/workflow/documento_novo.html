@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Novo documento de acompanhamento — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    {% if pedido %}<a href="{% url 'workflow:detalhe_pedido' pedido.pk %}">Pedido</a>{% else %}<a href="{% url 'workflow:detalhe' candidatura.public_id %}">Acompanhamento</a>{% endif %}
+    <span aria-hidden="true">/</span>
+    <span>Novo documento</span>
+  </nav>
+  <header class="detail-header">
+    <div>
+      <p class="eyebrow">Armazenamento privado</p>
+      <h1 class="page-title">{% if questao %}Guardar documento da questão {{ questao.ordem }}{% else %}Guardar documento de acompanhamento{% endif %}</h1>
+      <p class="section-copy">Use esta área para comunicações do IEFP ou documentos pedidos durante a análise.</p>
+    </div>
+  </header>
+  <section class="form-card workflow-form-card">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% include "includes/formulario.html" with form=form %}
+      <div class="actions">
+        <button class="button button-primary" type="submit">Guardar documento</button>
+        {% if pedido %}<a class="button button-secondary" href="{% url 'workflow:detalhe_pedido' pedido.pk %}">Cancelar</a>{% else %}<a class="button button-secondary" href="{% url 'workflow:detalhe' candidatura.public_id %}">Cancelar</a>{% endif %}
+      </div>
+    </form>
+  </section>
+{% endblock %}

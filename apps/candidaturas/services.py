@@ -87,6 +87,9 @@ def criar_candidatura_individual(*, criada_por, vinculo_referencia, conjunto_reg
     )
     candidatura.full_clean()
     candidatura.save()
+    from apps.workflow.services import registar_criacao
+
+    registar_criacao(candidatura, criada_por)
     beneficiario = BeneficiarioCandidatura(
         candidatura=candidatura,
         candidato=candidato,
@@ -114,6 +117,9 @@ def criar_candidatura_empresarial(*, criada_por, titular_empresa, conjunto_regra
     )
     candidatura.full_clean()
     candidatura.save()
+    from apps.workflow.services import registar_criacao
+
+    registar_criacao(candidatura, criada_por)
     AtribuicaoCandidatura.objects.create(
         candidatura=candidatura,
         utilizador=criada_por,

@@ -837,6 +837,92 @@ h3 {
   background: var(--color-surface);
 }
 
+.workflow-overview,
+.workflow-grid,
+.request-questions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.workflow-focus-card,
+.workflow-record {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.2rem;
+  border: 1px solid var(--color-border);
+  border-left: 0.3rem solid var(--color-primary);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+}
+
+.workflow-focus-card h2,
+.workflow-record p,
+.workflow-question h2 {
+  margin: 0;
+}
+
+.workflow-record > span,
+.workflow-focus-card > p,
+.workflow-record > p,
+.answer-history {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.workflow-actions {
+  margin-top: 1rem;
+}
+
+.workflow-timeline {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-timeline li {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.workflow-timeline p {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+}
+
+.timeline-code {
+  align-self: start;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-background);
+  color: var(--color-primary-dark);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.workflow-form-card {
+  max-width: 52rem;
+}
+
+.workflow-question {
+  display: grid;
+  gap: 1rem;
+}
+
+.answer-history {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.complete-response-card {
+  margin-top: 1.5rem;
+}
+
 .document-card h2,
 .version-card h2,
 .snapshot-panel h2 {

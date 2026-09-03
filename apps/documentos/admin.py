@@ -81,12 +81,14 @@ class VersaoDocumentoAdmin(SemEliminacaoAdmin):
 class SnapshotSubmissaoAdmin(SemEliminacaoAdmin):
     list_display = ("candidatura", "finalidade", "sequencia", "capturado_em")
     list_filter = ("finalidade",)
+    search_fields = ("candidatura__public_id", "hash_conteudo")
     readonly_fields = (
         "candidatura",
         "finalidade",
         "sequencia",
         "capturado_em",
         "capturado_por",
+        "transicao",
         "dados",
         "versao_esquema",
         "hash_conteudo",

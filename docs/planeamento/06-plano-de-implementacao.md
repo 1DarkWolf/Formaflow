@@ -260,7 +260,9 @@ Critérios verificados:
 
 Objetivo: gerir os comprovativos privados necessários à submissão.
 
-Entregáveis futuros:
+Estado: **concluído em 2 de setembro de 2026**.
+
+Entregáveis implementados:
 
 - checklist dinâmica;
 - upload privado e validação de PDF/tamanho;
@@ -281,7 +283,9 @@ Critérios verificados:
 
 Objetivo: implementar preparação, submissão, análise e decisões.
 
-Entregáveis futuros:
+Estado: **concluído em 3 de setembro de 2026**.
+
+Entregáveis implementados:
 
 - registo declarativo de `TR-001` a `TR-012`;
 - histórico imutável e bloqueio concorrente;
@@ -290,13 +294,13 @@ Entregáveis futuros:
 - decisão por beneficiário e resultado global;
 - tarefas e notificações associadas.
 
-Concluído quando:
+Critérios verificados:
 
-- todas as transições têm testes de aceitação e recusa;
-- não existe estado alterado sem transição;
-- pedido completo suspende e retoma o prazo correto;
-- decisão parcial produz resultado global coerente;
-- repetição do mesmo pedido não duplica efeitos.
+- [x] Todas as transições de `TR-001` a `TR-012` têm testes de aceitação e recusa.
+- [x] A alteração normal de estado sem serviço de transição é recusada.
+- [x] Um pedido completo suspende e retoma o prazo correto.
+- [x] Uma decisão parcial produz resultado global coerente.
+- [x] A repetição da mesma chave não duplica transições, snapshots ou pedidos.
 
 ### IMP-06 — Aceitação, acompanhamento e encerramento
 

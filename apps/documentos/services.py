@@ -11,6 +11,7 @@ from apps.candidaturas.models import Candidatura
 from apps.candidaturas.selectors import (
     utilizador_pode_consultar_equipa,
     utilizador_pode_editar_candidatura,
+    utilizador_pode_operar_candidatura,
 )
 from apps.organizacoes.selectors import utilizador_e_administrador
 from apps.regras.models import ParametroRegra, TipoDocumento
@@ -323,6 +324,69 @@ def substituir_documento(
         raise
 
 
+def carregar_documento_workflow(
+    *,
+    candidatura_id,
+    tipo_documento,
+    ficheiro,
+    utilizador,
+    titulo="",
+    beneficiario=None,
+):
+    candidature = Candidatura.objects.select_related("conjunto_regras").get(pk=candidatura_id)
+    allowed_states = {
+        Candidatura.Estado.SUBMETIDA,
+        Candidatura.Estado.EM_ANALISE,
+        Candidatura.Estado.AGUARDA_ELEMENTOS,
+        Candidatura.Estado.APROVADA_AGUARDA_TERMO,
+    }
+    profile = getattr(utilizador, "perfil_candidato", None)
+    beneficiary_scope = bool(
+        beneficiario
+        and profile
+        and beneficiario.candidato_id == profile.pk
+        and beneficiario.candidatura_id == candidature.pk
+    )
+    if candidature.estado_atual not in allowed_states or not (
+        utilizador_pode_operar_candidatura(utilizador, candidature) or beneficiary_scope
+    ):
+        raise PermissionDenied("Não pode guardar documentos de acompanhamento nesta fase.")
+    if not tipo_documento.ativo:
+        raise ValidationError("O tipo documental selecionado não está ativo.")
+    if beneficiario and beneficiario.candidatura_id != candidature.pk:
+        raise ValidationError("O beneficiário não pertence à candidatura.")
+    key = None
+    try:
+        key, stored_file = _guardar_ficheiro_validado(ficheiro, candidature, utilizador)
+        with transaction.atomic():
+            stored_file.full_clean()
+            stored_file.save()
+            document = Documento(
+                candidatura=candidature,
+                beneficiario=beneficiario,
+                tipo_documento=tipo_documento,
+                fase=FaseDocumento.ANALISE,
+                titulo=titulo.strip(),
+                estado_atual=EstadoDocumento.RECEBIDO,
+                criado_por=utilizador,
+            )
+            document.full_clean()
+            document.save()
+            version = VersaoDocumento(
+                documento=document,
+                numero=1,
+                ficheiro=stored_file,
+                carregada_por=utilizador,
+            )
+            version.full_clean()
+            version.save()
+        return version
+    except Exception:
+        if key:
+            eliminar_privado(key)
+        raise
+
+
 @transaction.atomic
 def validar_versao(*, versao_id, utilizador, resultado, observacao=""):
     version = (
@@ -392,15 +456,30 @@ def dispensar_requisito(*, requisito_id, utilizador, motivo):
 
 
 @transaction.atomic
-def criar_snapshot(*, candidatura_id, utilizador, finalidade, dados_adicionais=None):
+def criar_snapshot(
+    *,
+    candidatura_id,
+    utilizador,
+    finalidade,
+    dados_adicionais=None,
+    transicao=None,
+):
     candidature = (
         Candidatura.objects.select_for_update()
         .select_related("titular_candidato", "titular_empresa", "conjunto_regras")
         .get(pk=candidatura_id)
     )
-    _exigir_edicao(utilizador, candidature)
+    if candidature.estado_atual == Candidatura.Estado.RASCUNHO:
+        _exigir_edicao(utilizador, candidature)
+    elif not (
+        candidature.estado_atual == Candidatura.Estado.PRONTA_SUBMISSAO
+        and utilizador_pode_operar_candidatura(utilizador, candidature)
+    ):
+        raise PermissionDenied("Não pode criar uma fotografia nesta fase.")
     if finalidade not in SnapshotSubmissao.Finalidade.values:
         raise ValidationError("Escolha uma finalidade de snapshot válida.")
+    if transicao and transicao.candidatura_id != candidature.pk:
+        raise ValidationError("A transição não pertence à candidatura fotografada.")
     blocking = candidature.requisitos_documentais.filter(obrigatorio=True, bloqueante=True).exclude(
         estado__in=(EstadoDocumento.VALIDO, EstadoDocumento.DISPENSADO)
     )
@@ -453,6 +532,7 @@ def criar_snapshot(*, candidatura_id, utilizador, finalidade, dados_adicionais=N
     ).hexdigest()
     snapshot = SnapshotSubmissao.objects.create(
         candidatura=candidature,
+        transicao=transicao,
         finalidade=finalidade,
         sequencia=sequence,
         capturado_por=utilizador,

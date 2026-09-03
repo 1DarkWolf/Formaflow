@@ -376,6 +376,13 @@ class SnapshotSubmissao(models.Model):
         on_delete=models.PROTECT,
         related_name="snapshots_submissao",
     )
+    transicao = models.ForeignKey(
+        "workflow.TransicaoCandidatura",
+        on_delete=models.PROTECT,
+        related_name="snapshots_submissao",
+        blank=True,
+        null=True,
+    )
     finalidade = models.CharField(max_length=12, choices=Finalidade.choices)
     sequencia = models.PositiveIntegerField(editable=False)
     capturado_em = models.DateTimeField(auto_now_add=True, editable=False)

@@ -152,6 +152,22 @@ class Candidatura(ModeloTemporal):
     def __str__(self):
         return f"{self.get_tipo_display()} — {str(self.public_id)[:8]}"
 
+    def save(self, *args, **kwargs):
+        if self.pk:
+            previous = (
+                self.__class__.objects.filter(pk=self.pk)
+                .values("estado_atual", "resultado_decisao")
+                .first()
+            )
+            if previous and (
+                previous["estado_atual"] != self.estado_atual
+                or previous["resultado_decisao"] != self.resultado_decisao
+            ):
+                raise ValidationError(
+                    "O estado e o resultado só podem mudar através do serviço de workflow."
+                )
+        return super().save(*args, **kwargs)
+
     @property
     def titular(self):
         return self.titular_candidato or self.titular_empresa

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ definicao.designacao }} — Forma Flow{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb" aria-label="Navegação estrutural">
+    <a href="{% url 'workflow:detalhe' candidatura.public_id %}">Acompanhamento</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ definicao.codigo }}</span>
+  </nav>
+  <header class="detail-header">
+    <div>
+      <p class="eyebrow">{{ definicao.codigo }} · {{ candidatura.get_estado_atual_display }}</p>
+      <h1 class="page-title">{{ definicao.designacao }}</h1>
+      <p class="section-copy">Novo estado previsto: {{ definicao.destino }}. O registo não executa ações no Iefponline.</p>
+    </div>
+  </header>
+  <section class="form-card workflow-form-card">
+    {% if definicao.codigo == "TR-006" %}
+      <p class="notice-inline">Se não tiver uma referência externa, <a class="text-link" href="{% url 'workflow:novo_documento' candidatura.public_id %}">guarde primeiro a comunicação recebida</a>.</p>
+    {% endif %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/formulario.html" with form=form %}
+      <div class="actions">
+        <button class="button button-primary" type="submit">Confirmar registo</button>
+        <a class="button button-secondary" href="{% url 'workflow:detalhe' candidatura.public_id %}">Cancelar</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

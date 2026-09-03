@@ -23,7 +23,7 @@ class DemonstrationCommandTests(TestCase):
         call_command("carregar_dados_demonstracao", stdout=output)
 
         self.assertEqual(self.counts(), first_counts)
-        self.assertEqual(first_counts, (1, 1, 1, 21, 9, 2))
+        self.assertEqual(first_counts, (1, 1, 1, 21, 10, 2))
         self.assertIn("sem criar duplicados", output.getvalue())
 
     @staticmethod

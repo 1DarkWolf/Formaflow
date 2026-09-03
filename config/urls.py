@@ -10,5 +10,6 @@ urlpatterns = [
     path("regras/", include("apps.regras.urls")),
     path("candidaturas/", include("apps.candidaturas.urls")),
     path("documentos/", include("apps.documentos.urls")),
+    path("workflow/", include("apps.workflow.urls")),
     path("", include("apps.core.urls")),
 ]

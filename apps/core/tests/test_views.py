@@ -9,7 +9,7 @@ class HomeViewTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Forma Flow")
         self.assertContains(response, "Candidaturas e formação num só fluxo")
-        self.assertContains(response, "IMP-05 — Submissão e workflow")
+        self.assertContains(response, "IMP-06 — Aceitação e encerramento")
 
     def test_home_rejects_unsafe_methods(self):
         response = self.client.post(reverse("core:home"))
