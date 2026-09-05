@@ -1,4 +1,5 @@
 from decimal import Decimal
+from html.parser import HTMLParser
 
 from django.test import TestCase
 from django.urls import reverse
@@ -8,7 +9,36 @@ from ..services import registar_restituicao_oficial
 from .test_services import FinanceFixtureMixin
 
 
+class FormMarkupParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.ids = []
+        self.labels = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        if attributes.get("id"):
+            self.ids.append(attributes["id"])
+        if tag == "label" and attributes.get("for"):
+            self.labels.append(attributes["for"])
+
+
 class FinancialViewTests(FinanceFixtureMixin, TestCase):
+    def test_financial_forms_have_unique_ids_and_linked_labels(self):
+        self.calculate_support()
+        self.client.force_login(self.manager)
+
+        page = self.client.get(reverse("financeiro:detalhe", args=[self.application.public_id]))
+        markup = FormMarkupParser()
+        markup.feed(page.content.decode())
+
+        self.assertEqual(len(markup.ids), len(set(markup.ids)))
+        self.assertTrue(markup.labels)
+        self.assertTrue(set(markup.labels).issubset(set(markup.ids)))
+        self.assertContains(page, 'name="apoio"')
+        self.assertContains(page, 'id="id_confirmacao_apoio"')
+        self.assertContains(page, 'id="id_movimento_apoio"')
+
     def test_manager_can_calculate_and_open_financial_summary(self):
         self.client.force_login(self.manager)
         calculate_url = reverse("financeiro:calcular", args=[self.application.public_id])

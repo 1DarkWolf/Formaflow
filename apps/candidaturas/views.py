@@ -82,6 +82,8 @@ def _contexto_detalhe(candidatura, user, *, formulario_ativo=None):
         }
         if formulario_ativo:
             default_forms.update(formulario_ativo)
+        for form_name, form in default_forms.items():
+            form.auto_id = f"id_{form_name}_%s"
         context.update(default_forms)
     return context
 

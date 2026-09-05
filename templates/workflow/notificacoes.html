@@ -32,10 +32,10 @@
 
   <div class="list-grid">
     {% for aviso in notificacoes %}
-      <article class="notification-card priority-{{ aviso.prioridade|lower }}">
+      <article class="notification-card priority-{{ aviso.prioridade|lower }}" data-read="{{ aviso.estado }}">
         <div class="notification-heading">
           <div>
-            <span class="status-label">{{ aviso.get_prioridade_display }} · {{ aviso.get_estado_display }}</span>
+            <span class="status-label" data-state="{{ aviso.prioridade }}">{{ aviso.get_prioridade_display }} · {{ aviso.get_estado_display }}</span>
             <h2>{{ aviso.titulo }}</h2>
           </div>
           <time datetime="{{ aviso.criado_em|date:'c' }}">{{ aviso.criado_em|date:"d/m/Y H:i" }}</time>

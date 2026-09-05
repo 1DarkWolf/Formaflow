@@ -1,0 +1,28 @@
+/* Keep Django's controls and theme switching, with the Forma Flow identity. */
+:root, html[data-theme="light"] {
+  --primary: #11765b;
+  --secondary: #153c33;
+  --accent: #d5edb6;
+  --header-color: #d5edb6;
+  --header-branding-color: #fff;
+  --link-fg: #0d6750;
+  --link-selected-fg: #0d5945;
+  --button-bg: #11765b;
+  --button-hover-bg: #0d5945;
+  --default-button-bg: #153c33;
+  --default-button-hover-bg: #0d5945;
+  --font-family-primary: "Segoe UI", system-ui, sans-serif;
+}
+html[data-theme="dark"] { --link-fg: #9dd9be; --link-selected-fg: #d5edb6; }
+@media (prefers-color-scheme: dark) {
+  html[data-theme="auto"] { --link-fg: #9dd9be; --link-selected-fg: #d5edb6; }
+}
+#header { gap: 1rem; }
+#branding #site-name { font-size: 1.6rem; font-weight: 700; letter-spacing: -.06em; }
+.brand-light { font-weight: 400; }
+#branding small { margin-left: .65rem; font-size: .7rem; font-weight: 400; letter-spacing: .04em; opacity: .8; }
+.back-to-app { font-size: .75rem; white-space: nowrap; }
+.module, .submit-row, #changelist { border-radius: .65rem; overflow: hidden; }
+.button, input[type="submit"], input[type="button"], .submit-row input { border-radius: .45rem; }
+input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="url"], textarea, select { border-radius: .4rem; padding: .55rem .65rem; }
+#content h1 { font-size: 1.8rem; font-weight: 600; letter-spacing: -.035em; }

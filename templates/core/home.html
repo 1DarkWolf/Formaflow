@@ -1,61 +1,42 @@
 {% extends "base.html" %}
-
 {% block title %}Candidaturas e formação — Forma Flow{% endblock %}
-
 {% block content %}
   <section class="hero" aria-labelledby="titulo-pagina">
     <div>
-      <p class="eyebrow">Preparação por etapas</p>
-      <h1 id="titulo-pagina">Candidaturas e formação num só fluxo</h1>
-      <p class="hero-copy">
-        O Forma Flow cria rascunhos individuais e empresariais, organiza ações de formação
-        e mantém os comprovativos em armazenamento privado com histórico completo.
-      </p>
+      <p class="eyebrow">A sua formação, organizada</p>
+      <h1 id="titulo-pagina">Candidaturas e formação <em>num só fluxo</em></h1>
+      <p class="hero-copy">Menos documentos dispersos. Mais clareza em cada etapa. Prepare candidaturas, acompanhe prazos e saiba sempre qual é o próximo passo.</p>
       <div class="actions">
-        {% if user.is_authenticated %}
-          <a class="button button-primary" href="{% url 'contas:dashboard' %}">Abrir o meu painel</a>
-        {% else %}
-          <a class="button button-primary" href="{% url 'contas:login' %}">Iniciar sessão</a>
-          <a class="button button-secondary" href="{% url 'contas:registar' %}">Criar conta</a>
-        {% endif %}
+        {% if user.is_authenticated %}<a class="button button-primary" href="{% url 'contas:dashboard' %}">Abrir o meu painel {% include "includes/icon.html" with name="arrow" %}</a>
+        {% else %}<a class="button button-primary" href="{% url 'contas:registar' %}">Começar agora {% include "includes/icon.html" with name="arrow" %}</a><a class="button button-secondary" href="{% url 'contas:login' %}">Já tenho uma conta</a>{% endif %}
       </div>
+      <div class="hero-reassurance"><span>{% include "includes/icon.html" with name="shield" %} Documentos privados</span><span>{% include "includes/icon.html" with name="check" %} Histórico preservado</span></div>
     </div>
-    <div class="status-panel" aria-label="Estado da implementação">
-      <span class="status-dot" aria-hidden="true"></span>
-      <div>
-        <strong>MVP preparado para demonstração</strong>
-        <span>Fluxo completo · alertas · relatórios · recuperação</span>
+    <div class="process-preview" aria-label="Exemplo ilustrativo das etapas de uma candidatura">
+      <div class="preview-window">
+        <div class="preview-top"><strong>{% include "includes/icon.html" with name="folder" %} O seu processo</strong><span>Exemplo de percurso</span></div>
+        <div class="preview-heading"><h2>Da ideia à formação.</h2><p>Tudo ligado, em cada etapa.</p></div>
+        <ol class="preview-steps">
+          <li><span class="preview-step-icon">{% include "includes/icon.html" with name="document" %}</span><div><strong>Preparar a candidatura</strong><small>Dados, formação e comprovativos reunidos</small></div></li>
+          <li><span class="preview-step-icon">{% include "includes/icon.html" with name="clock" %}</span><div><strong>Acompanhar o processo</strong><small>Decisões, prazos e próximos passos</small></div></li>
+          <li><span class="preview-step-icon">{% include "includes/icon.html" with name="check" %}</span><div><strong>Concluir a formação</strong><small>Certificados, encerramento e apoios</small></div></li>
+        </ol>
+        <div class="preview-footer">{% include "includes/icon.html" with name="shield" %}<span>Os documentos certos, no processo certo.</span></div>
       </div>
+      <div class="preview-note">{% include "includes/icon.html" with name="bell" %}<div><strong>Prazos sob controlo</strong><small>Avisos para acompanhar o que precisa de atenção.</small></div></div>
     </div>
   </section>
-
-  <section aria-labelledby="fundacoes">
-    <h2 id="fundacoes">Capacidades disponíveis</h2>
+  <section class="home-section" aria-labelledby="funcionalidades">
+    <p class="eyebrow">Mais organização, menos esquecimentos</p>
+    <h2 id="funcionalidades">O essencial para fazer a sua formação avançar.</h2>
     <div class="card-grid">
-      <article class="card">
-        <span class="card-number" aria-hidden="true">01</span>
-        <h3>Histórico auditável</h3>
-        <p>Cada mudança de estado usa uma transição imutável, versionada e idempotente.</p>
-      </article>
-      <article class="card">
-        <span class="card-number" aria-hidden="true">02</span>
-        <h3>Prazos e pedidos</h3>
-        <p>Pedidos adicionais suspendem a decisão, criam tarefas e retomam o prazo após a resposta.</p>
-      </article>
-      <article class="card">
-        <span class="card-number" aria-hidden="true">03</span>
-        <h3>Decisão por pessoa</h3>
-        <p>O resultado global deriva dos beneficiários e mantém a comunicação oficial como evidência.</p>
-      </article>
+      <article class="card"><span class="feature-icon">{% include "includes/icon.html" with name="folder" %}</span><h3>Um lugar para cada documento</h3><p>Reúna os comprovativos, consulte o que falta e mantenha as versões anteriores sempre disponíveis.</p></article>
+      <article class="card"><span class="feature-icon">{% include "includes/icon.html" with name="calendar" %}</span><h3>O próximo prazo à vista</h3><p>Consulte tarefas e receba avisos para responder a pedidos e preparar cada etapa a tempo.</p></article>
+      <article class="card"><span class="feature-icon">{% include "includes/icon.html" with name="chart" %}</span><h3>Uma visão de todo o percurso</h3><p>Acompanhe candidaturas individuais ou empresariais, decisões e apoios num painel adaptado à sua conta.</p></article>
     </div>
   </section>
-
-  <section class="next-step" aria-labelledby="proximo-passo">
-    <div>
-      <p class="eyebrow">Entrega consolidada</p>
-      <h2 id="proximo-passo">IMP-09 — Robustez e entrega</h2>
-      <p>O percurso da PAP está documentado, testado e preparado para execução offline.</p>
-    </div>
-    <span class="next-code">09 / 09</span>
+  <section class="next-step" aria-labelledby="comecar">
+    <div><p class="eyebrow">O primeiro passo está aqui</p><h2 id="comecar">Dê espaço à sua próxima formação.</h2><p>O Forma Flow apoia o acompanhamento do Cheque-Formação. A submissão e as decisões oficiais continuam no Iefponline.</p></div>
+    {% if user.is_authenticated %}<a class="button" href="{% url 'candidaturas:nova' %}">Nova candidatura {% include "includes/icon.html" with name="plus" %}</a>{% else %}<a class="button" href="{% url 'contas:registar' %}">Criar a minha conta {% include "includes/icon.html" with name="arrow" %}</a>{% endif %}
   </section>
 {% endblock %}

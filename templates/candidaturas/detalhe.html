@@ -18,9 +18,9 @@
     {% if candidatura.conjunto_regras.referencia_demonstracao %}
       <span class="demo-label">Regras de demonstração</span>
     {% endif %}
-    <a class="button button-secondary" href="{% url 'workflow:detalhe' candidatura.public_id %}">Acompanhamento</a>
-    <a class="button button-secondary" href="{% url 'financeiro:detalhe' candidatura.public_id %}">Financeiro</a>
   </header>
+
+  {% include "includes/process_nav.html" with section="resumo" %}
 
   <ol class="wizard-steps" aria-label="Etapas da candidatura">
     <li class="is-complete"><span>1</span> Tipo</li>

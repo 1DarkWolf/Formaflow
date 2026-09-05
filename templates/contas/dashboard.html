@@ -1,82 +1,40 @@
 {% extends "base.html" %}
-
 {% block title %}O meu painel — Forma Flow{% endblock %}
-
 {% block content %}
-  <section class="dashboard-header" aria-labelledby="titulo-pagina">
-    <div>
-      <p class="eyebrow">{{ papel_designacao }}</p>
-      <h1 id="titulo-pagina" class="page-title">Olá, {{ user.get_short_name }}</h1>
-      {% if papel_painel == "administrador" %}
-        <p class="section-copy">Visão global de operação, configuração e falhas que exigem acompanhamento.</p>
-      {% elif papel_painel == "gestor" %}
-        <p class="section-copy">Prioridades das empresas e processos sob a sua gestão.</p>
-      {% else %}
-        <p class="section-copy">Próximos passos e pendências das candidaturas que lhe dizem respeito.</p>
-      {% endif %}
+  <header class="dashboard-header">
+    <div><p class="eyebrow">O meu painel · {{ papel_designacao }}</p><h1 class="page-title">Olá, {{ user.get_short_name }}.</h1>
+      {% if papel_painel == "administrador" %}<p class="section-copy">Uma visão do que está a acontecer e do que precisa da sua atenção.</p>
+      {% elif papel_painel == "gestor" %}<p class="section-copy">Acompanhe os processos e as prioridades em {{ empresas_geridas }} empresa{{ empresas_geridas|pluralize }} sob a sua gestão.</p>
+      {% else %}<p class="section-copy">A sua formação, passo a passo. Veja o que há de novo nos seus processos.</p>{% endif %}
     </div>
-    <div class="identity-card">
-      <span>Email</span><strong>{{ user.email }}</strong>
-      <span>Papel atual</span><strong>{% if papeis %}{{ papeis|join:", " }}{% else %}{{ papel_designacao }}{% endif %}</strong>
-      {% if papel_painel == "gestor" %}<span>Empresas geridas</span><strong>{{ empresas_geridas }}</strong>{% endif %}
-    </div>
-  </section>
-
+    <a class="button button-primary" href="{% url 'candidaturas:nova' %}">{% include "includes/icon.html" with name="plus" %} Nova candidatura</a>
+  </header>
+  <div class="dashboard-banner"><div class="banner-copy"><span class="banner-icon">{% include "includes/icon.html" with name="leaf" %}</span><div><h2>Cada etapa mais perto do seu objetivo.</h2><p>Documentos, prazos e próximos passos. Tudo no mesmo lugar.</p></div></div><a class="text-link" href="{% url 'candidaturas:lista' %}">Ver candidaturas {% include "includes/icon.html" with name="arrow" %}</a></div>
   <section class="metric-grid" aria-label="Indicadores principais">
-    <article class="metric-card"><span>Candidaturas visíveis</span><strong>{{ indicadores.candidaturas }}</strong></article>
-    <article class="metric-card"><span>Em curso</span><strong>{{ indicadores.em_curso }}</strong></article>
-    <article class="metric-card"><span>Tarefas abertas</span><strong>{{ indicadores.tarefas_abertas }}</strong></article>
-    <article class="metric-card metric-alert"><span>Tarefas vencidas</span><strong>{{ indicadores.tarefas_vencidas }}</strong></article>
-    <article class="metric-card"><span>Documentos pendentes</span><strong>{{ indicadores.documentos_pendentes }}</strong></article>
-    <article class="metric-card"><span>Prazos nos próximos 7 dias</span><strong>{{ indicadores.prazos_proximos }}</strong></article>
+    <article class="metric-card"><div class="metric-top"><span>Candidaturas</span>{% include "includes/icon.html" with name="folder" %}</div><div class="metric-value"><strong>{{ indicadores.candidaturas }}</strong><small>no seu âmbito</small></div><p>Todos os seus processos</p></article>
+    <article class="metric-card"><div class="metric-top"><span>Em curso</span>{% include "includes/icon.html" with name="chart" %}</div><div class="metric-value"><strong>{{ indicadores.em_curso }}</strong><small>em acompanhamento</small></div><p>Da preparação à conclusão</p></article>
+    <article class="metric-card"><div class="metric-top"><span>Documentos pendentes</span>{% include "includes/icon.html" with name="document" %}</div><div class="metric-value"><strong>{{ indicadores.documentos_pendentes }}</strong><small>por resolver</small></div><p>Em falta ou a corrigir</p></article>
+    <article class="metric-card{% if indicadores.prazos_proximos %} metric-alert{% endif %}"><div class="metric-top"><span>Prazos próximos</span>{% include "includes/icon.html" with name="calendar" %}</div><div class="metric-value"><strong>{{ indicadores.prazos_proximos }}</strong><small>nos próximos 7 dias</small></div><p>Prepare as próximas entregas</p></article>
   </section>
-
-  {% if indicadores_admin %}
-    <section class="compact-metrics" aria-label="Indicadores de administração">
-      <span><strong>{{ indicadores_admin.regras_rascunho }}</strong> conjuntos de regras em rascunho</span>
-      <span><strong>{{ indicadores_admin.avisos_falhados }}</strong> envios opcionais falhados</span>
-      <a class="text-link" href="{% url 'admin:index' %}">Abrir administração técnica</a>
-    </section>
-  {% endif %}
-
+  <div class="compact-metrics" aria-label="Tarefas e avisos"><span><strong>{{ indicadores.tarefas_abertas }}</strong> tarefa{{ indicadores.tarefas_abertas|pluralize }} aberta{{ indicadores.tarefas_abertas|pluralize }}</span><span><strong>{{ indicadores.tarefas_vencidas }}</strong> tarefa{{ indicadores.tarefas_vencidas|pluralize }} vencida{{ indicadores.tarefas_vencidas|pluralize }}</span><a class="text-link" href="{% url 'workflow:notificacoes' %}">{% include "includes/icon.html" with name="bell" %} {{ indicadores.avisos_nao_lidos }} aviso{{ indicadores.avisos_nao_lidos|pluralize }} por ler {% include "includes/icon.html" with name="arrow" %}</a></div>
   <div class="dashboard-columns">
     <section class="dashboard-panel" aria-labelledby="titulo-tarefas">
-      <div class="panel-heading">
-        <div><p class="eyebrow">Ação</p><h2 id="titulo-tarefas">Prioridades</h2></div>
-        <a class="text-link" href="{% url 'workflow:notificacoes' %}">Ver {{ indicadores.avisos_nao_lidos }} aviso{{ indicadores.avisos_nao_lidos|pluralize }}</a>
-      </div>
+      <div class="panel-heading"><div><p class="eyebrow">O que precisa de atenção</p><h2 id="titulo-tarefas">As suas prioridades</h2></div><a class="text-link" href="{% url 'workflow:notificacoes' %}">Ver avisos {% include "includes/icon.html" with name="arrow" %}</a></div>
       <div class="compact-list">
-        {% for tarefa in tarefas_prioritarias %}
-          <article class="compact-row">
-            <div><strong>{{ tarefa.titulo }}</strong><span>{{ tarefa.candidatura.get_estado_atual_display }}</span></div>
-            {% if tarefa.data_limite %}<time datetime="{{ tarefa.data_limite|date:'c' }}">{{ tarefa.data_limite|date:"d/m/Y" }}</time>{% endif %}
-          </article>
-        {% empty %}<p class="muted-copy">Não existem tarefas abertas neste âmbito.</p>{% endfor %}
+        {% for tarefa in tarefas_prioritarias %}<article class="compact-row"><span class="task-marker">{% include "includes/icon.html" with name="clock" %}</span><div><strong><a class="task-link" href="{% url 'workflow:detalhe' tarefa.candidatura.public_id %}">{{ tarefa.titulo }}</a></strong><span>{{ tarefa.candidatura.get_estado_atual_display }}</span></div>{% if tarefa.data_limite %}<time datetime="{{ tarefa.data_limite|date:'c' }}">{{ tarefa.data_limite|date:"d/m/Y" }}</time>{% endif %}</article>
+        {% empty %}<div class="empty-state empty-state-small">{% include "includes/icon.html" with name="check" %}<h2>Tudo em dia por aqui.</h2><p>Não existem tarefas abertas neste âmbito.</p></div>{% endfor %}
       </div>
     </section>
-
-    <section class="dashboard-panel" aria-labelledby="titulo-estados">
-      <p class="eyebrow">Distribuição</p><h2 id="titulo-estados">Estados dos processos</h2>
-      <div class="compact-list">
-        {% for estado in distribuicao_estados %}<div class="state-row"><span>{{ estado.nome }}</span><strong>{{ estado.total }}</strong></div>{% empty %}<p class="muted-copy">Sem processos para apresentar.</p>{% endfor %}
-      </div>
-    </section>
+    <section class="dashboard-panel" aria-labelledby="titulo-estados"><p class="eyebrow">Visão geral</p><h2 id="titulo-estados">Onde estão os processos</h2><div class="compact-list">
+      {% for estado in distribuicao_estados %}<div class="state-row"><span>{{ estado.nome }}</span><strong>{{ estado.total }}</strong><meter min="0" max="{{ indicadores.candidaturas }}" value="{{ estado.total }}" aria-label="{{ estado.nome }}: {{ estado.total }} de {{ indicadores.candidaturas }} candidaturas">{{ estado.total }}</meter></div>{% empty %}<div class="empty-state empty-state-small">{% include "includes/icon.html" with name="chart" %}<p>Os estados dos seus processos aparecerão aqui.</p></div>{% endfor %}
+    </div></section>
   </div>
-
   <section class="application-section" aria-labelledby="titulo-recentes">
-    <div class="section-heading-inline">
-      <div><p class="eyebrow">Próximo passo</p><h2 id="titulo-recentes">Candidaturas recentes</h2></div>
-      <a class="text-link" href="{% url 'candidaturas:lista' %}">Consultar todas</a>
-    </div>
-    <div class="list-grid compact-list">
-      {% for candidatura in candidaturas_recentes %}
-        <article class="list-card">
-          <div><span class="status-label">{{ candidatura.get_estado_atual_display }}</span><h3>{{ candidatura.get_tipo_display }} · {{ candidatura.titular }}</h3><p>{{ candidatura.proxima_acao_display }}</p></div>
-          <a class="text-link" href="{% url 'workflow:detalhe' candidatura.public_id %}">Abrir processo</a>
-        </article>
-      {% empty %}<div class="empty-state"><h2>Ainda não existem candidaturas</h2><p>Crie um rascunho para iniciar a preparação.</p></div>{% endfor %}
-    </div>
+    <div class="section-heading-inline"><div><p class="eyebrow">Continue de onde ficou</p><h2 id="titulo-recentes">Candidaturas recentes</h2></div><a class="text-link" href="{% url 'candidaturas:lista' %}">Consultar todas {% include "includes/icon.html" with name="arrow" %}</a></div>
+    {% if candidaturas_recentes %}<div class="data-table-wrap"><table class="data-table"><thead><tr><th scope="col">Candidatura</th><th scope="col">Estado</th><th scope="col">Próximo passo</th><th scope="col">Ação</th></tr></thead><tbody>
+      {% for candidatura in candidaturas_recentes %}<tr><td><strong>{{ candidatura.titular }}</strong><small>{{ candidatura.get_tipo_display }} · {{ candidatura.criado_em|date:"d/m/Y" }}</small></td><td><span class="status-label" data-state="{{ candidatura.estado_atual }}">{{ candidatura.get_estado_atual_display }}</span></td><td class="next-action-cell">{{ candidatura.proxima_acao_display }}</td><td><a class="text-link" href="{% url 'workflow:detalhe' candidatura.public_id %}" aria-label="Abrir processo de {{ candidatura.titular }}">Abrir processo {% include "includes/icon.html" with name="arrow" %}</a></td></tr>{% endfor %}
+    </tbody></table></div>{% else %}<div class="empty-state compact-list"><span class="feature-icon">{% include "includes/icon.html" with name="folder" %}</span><h2>A sua primeira candidatura começa aqui.</h2><p>Crie um rascunho e complete a preparação ao seu ritmo.</p><a class="button button-primary" href="{% url 'candidaturas:nova' %}">Nova candidatura</a></div>{% endif %}
   </section>
-
+  {% if indicadores_admin %}<section class="compact-metrics" aria-label="Indicadores de administração"><span><strong>{{ indicadores_admin.regras_rascunho }}</strong> conjuntos de regras em rascunho</span><span><strong>{{ indicadores_admin.avisos_falhados }}</strong> envios opcionais falhados</span><a class="text-link" href="{% url 'admin:index' %}">Abrir administração técnica {% include "includes/icon.html" with name="arrow" %}</a></section>{% endif %}
   <p class="dashboard-secondary-action">Precisa de atualizar o acesso? <a class="text-link" href="{% url 'contas:password_change' %}">Alterar palavra-passe</a></p>
 {% endblock %}

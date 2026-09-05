@@ -1,0 +1,6 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block title %}{{ title }} | Administração — Forma Flow{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin.css' %}"><link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">{% endblock %}
+{% block branding %}<div id="site-name"><a href="{% url 'admin:index' %}">forma<span class="brand-light">flow</span> <small>Administração</small></a></div>{% endblock %}
+{% block nav-global %}<a class="back-to-app" href="{% url 'contas:dashboard' %}">Voltar ao painel</a>{% endblock %}

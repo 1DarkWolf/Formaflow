@@ -4,50 +4,50 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Forma Flow — acompanhamento de processos de formação.">
+    <meta name="theme-color" content="#123b32">
+    <meta name="description" content="Forma Flow — organize candidaturas, documentos e prazos de formação num só lugar.">
     <title>{% block title %}Forma Flow{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <script src="{% static 'js/interface.js' %}" defer></script>
   </head>
-  <body>
+  <body class="{% if user.is_authenticated %}app-layout{% else %}public-layout{% endif %}">
     <a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
-    <header class="site-header">
-      <div class="container header-content">
-        <a class="brand" href="{% url 'core:home' %}" aria-label="Forma Flow — início">
-          <span class="brand-mark" aria-hidden="true">F</span>
-          <span>Forma Flow</span>
+    {% if user.is_authenticated %}
+      <aside class="app-sidebar" id="navegacao-principal" aria-label="Menu principal">
+        <a class="brand" href="{% url 'contas:dashboard' %}" aria-label="Forma Flow — painel">
+          <span class="brand-mark" aria-hidden="true">{% include "includes/icon.html" with name="flow" %}</span>
+          <span>forma<span class="brand-light">flow</span><small>Gestão da formação</small></span>
         </a>
-        <div class="header-actions">
-          {% if user.is_authenticated %}
-            <a class="header-link optional-nav" href="{% url 'candidaturas:lista' %}">Candidaturas</a>
-            <a class="header-link optional-nav" href="{% url 'organizacoes:lista_empresas' %}">Empresas</a>
-            <a class="header-link optional-nav" href="{% url 'regras:lista_conjuntos' %}">Regras</a>
-            <a class="header-link" href="{% url 'workflow:notificacoes' %}">Avisos{% if avisos_nao_lidos %} ({{ avisos_nao_lidos }}){% endif %}</a>
-            <a class="header-link" href="{% url 'contas:dashboard' %}">{{ user.get_short_name }}</a>
-            <form method="post" action="{% url 'contas:logout' %}">
-              {% csrf_token %}
-              <button class="header-link button-link" type="submit">Terminar sessão</button>
-            </form>
-          {% else %}
-            <a class="header-link" href="{% url 'contas:login' %}">Iniciar sessão</a>
-          {% endif %}
-          <span class="phase-badge">IMP-08</span>
+        <p class="nav-caption">Área de trabalho</p>
+        <nav class="sidebar-nav" aria-label="Navegação principal">
+          <a href="{% url 'contas:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>{% include "includes/icon.html" with name="grid" %}<span>O meu painel</span></a>
+          <a href="{% url 'candidaturas:lista' %}" {% if request.resolver_match.app_name == 'candidaturas' or request.resolver_match.app_name == 'documentos' or request.resolver_match.app_name == 'financeiro' or candidatura %}aria-current="page"{% endif %}>{% include "includes/icon.html" with name="folder" %}<span>Candidaturas</span></a>
+          <a href="{% url 'organizacoes:lista_empresas' %}" {% if request.resolver_match.app_name == 'organizacoes' %}aria-current="page"{% endif %}>{% include "includes/icon.html" with name="building" %}<span>Empresas</span></a>
+          <a href="{% url 'workflow:notificacoes' %}" {% if request.resolver_match.url_name == 'notificacoes' %}aria-current="page"{% endif %}>{% include "includes/icon.html" with name="bell" %}<span>Avisos</span>{% if avisos_nao_lidos %}<span class="nav-count">{{ avisos_nao_lidos }}</span>{% endif %}</a>
+          <a href="{% url 'regras:lista_conjuntos' %}" {% if request.resolver_match.app_name == 'regras' %}aria-current="page"{% endif %}>{% include "includes/icon.html" with name="sliders" %}<span>Regras</span></a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="sidebar-note">{% include "includes/icon.html" with name="leaf" %}<strong>Um passo de cada vez.</strong><p>Acompanhe a sua formação, do primeiro documento à conclusão.</p><a href="{% url 'core:home' %}">Conhecer o Forma Flow {% include "includes/icon.html" with name="arrow" %}</a></div>
+          <a class="sidebar-account" href="{% url 'contas:password_change' %}"><span class="avatar">{{ user.get_short_name|first|upper }}</span><span><strong>{{ user.get_short_name }}</strong><small>Gerir acesso à conta</small></span>{% include "includes/icon.html" with name="settings" %}</a>
+          <form class="logout-form" method="post" action="{% url 'contas:logout' %}">{% csrf_token %}<button type="submit">{% include "includes/icon.html" with name="logout" %} Terminar sessão</button></form>
         </div>
-      </div>
-    </header>
-
-    <main id="conteudo" class="container main-content">
-      {% if messages %}
-        <div class="messages" aria-live="polite">
-          {% for message in messages %}
-            <div class="message{% if message.tags %} message-{{ message.tags }}{% endif %}">{{ message }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
+      </aside>
+      <button class="nav-backdrop" type="button" aria-label="Fechar menu" hidden></button>
+      <header class="app-topbar">
+        <div class="topbar-start"><button class="menu-toggle icon-button" type="button" aria-controls="navegacao-principal" aria-expanded="false" aria-label="Abrir menu" hidden>{% include "includes/icon.html" with name="menu" %}</button><span class="workspace-label">Área de trabalho <span>/</span> <strong>{% if request.resolver_match.app_name == 'contas' %}A minha conta{% elif request.resolver_match.app_name == 'organizacoes' %}Empresas{% elif request.resolver_match.app_name == 'regras' %}Regras{% elif request.resolver_match.url_name == 'notificacoes' %}Avisos{% elif candidatura %}Processos{% elif request.resolver_match.app_name == 'candidaturas' %}Candidaturas{% else %}Forma Flow{% endif %}</strong></span></div>
+        <div class="topbar-actions"><span class="today-label">{% now "j M Y" %}</span><a class="icon-button notification-button" href="{% url 'workflow:notificacoes' %}" aria-label="Avisos{% if avisos_nao_lidos %}: {{ avisos_nao_lidos }} por ler{% endif %}">{% include "includes/icon.html" with name="bell" %}{% if avisos_nao_lidos %}<span class="unread-dot"></span>{% endif %}</a><span class="avatar avatar-small" aria-hidden="true">{{ user.get_short_name|first|upper }}</span></div>
+      </header>
+    {% else %}
+      <header class="site-header"><div class="container header-content">
+        <a class="brand" href="{% url 'core:home' %}" aria-label="Forma Flow — início"><span class="brand-mark" aria-hidden="true">{% include "includes/icon.html" with name="flow" %}</span><span>forma<span class="brand-light">flow</span></span></a>
+        <nav class="header-actions" aria-label="Navegação principal"><a class="header-link" href="{% url 'contas:login' %}">Iniciar sessão</a><a class="button button-primary button-small" href="{% url 'contas:registar' %}">Criar conta {% include "includes/icon.html" with name="arrow" %}</a></nav>
+      </div></header>
+    {% endif %}
+    <main id="conteudo" class="container main-content" tabindex="-1">
+      {% if messages %}<div class="messages" aria-live="polite">{% for message in messages %}<div class="message{% if message.tags %} message-{{ message.tags }}{% endif %}">{% include "includes/icon.html" with name="info" %}<span>{{ message }}</span></div>{% endfor %}</div>{% endif %}
       {% block content %}{% endblock %}
     </main>
-
-    <footer class="site-footer">
-      <div class="container">Projeto académico — dados de demonstração serão fictícios.</div>
-    </footer>
+    <footer class="site-footer"><div class="container footer-content"><span>Forma Flow <span class="footer-divider">/</span> Projeto académico</span><span>Acompanhamento do Cheque-Formação</span></div></footer>
   </body>
 </html>

@@ -16,7 +16,7 @@
       <article class="rule-card">
         <div class="rule-card-header">
           <div>
-            <span class="status-label">{{ conjunto.get_estado_display }}</span>
+            <span class="status-label" data-state="{{ conjunto.estado }}">{{ conjunto.get_estado_display }}</span>
             <h2>{{ conjunto.designacao }}</h2>
             <p>{{ conjunto.codigo }} · versão {{ conjunto.versao }}</p>
           </div>

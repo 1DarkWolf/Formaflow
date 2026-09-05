@@ -17,8 +17,9 @@
       <h1 class="page-title">Apoios e movimentos</h1>
       <p class="section-copy">Estimativas, valores oficiais, pagamentos e restituições com histórico separado.</p>
     </div>
-    <a class="button button-secondary" href="{% url 'workflow:detalhe' candidatura.public_id %}">Voltar ao acompanhamento</a>
   </header>
+
+  {% include "includes/process_nav.html" with section="financeiro" %}
 
   <section class="application-section" aria-labelledby="apoios">
     <div class="section-heading-inline">
@@ -83,7 +84,7 @@
     <section class="application-section" aria-labelledby="calculo-financeiro">
       <p class="eyebrow">Preparação</p>
       <h2 id="calculo-financeiro">Recalcular estimativas</h2>
-      <form method="post" action="{% url 'financeiro:calcular' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_calculo %}<button class="button button-primary" type="submit">Calcular</button></form>
+      <form class="stacked-form inline-form" method="post" action="{% url 'financeiro:calcular' candidatura.public_id %}" novalidate>{% csrf_token %}{% include "includes/formulario.html" with form=form_calculo %}<button class="button button-primary" type="submit">Calcular</button></form>
     </section>
   {% endif %}
 

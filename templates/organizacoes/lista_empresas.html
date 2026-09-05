@@ -14,15 +14,19 @@
   <div class="list-grid">
     {% for empresa in empresas %}
       <article class="list-card">
-        <div>
-          <span class="status-label">{% if empresa.ativa %}Ativa{% else %}Inativa{% endif %}</span>
+        <div class="record-identity">
+          <span class="record-icon">{% include "includes/icon.html" with name="building" %}</span>
+          <div>
+          <span class="status-label" data-state="{% if empresa.ativa %}ATIVA{% else %}INATIVA{% endif %}">{% if empresa.ativa %}Ativa{% else %}Inativa{% endif %}</span>
           <h2>{{ empresa }}</h2>
           {% if empresa.localidade %}<p>{{ empresa.localidade }}</p>{% endif %}
+          </div>
         </div>
         <a class="button button-secondary" href="{% url 'organizacoes:detalhe_empresa' empresa.public_id %}">Consultar</a>
       </article>
     {% empty %}
       <div class="empty-state">
+        <span class="feature-icon">{% include "includes/icon.html" with name="building" %}</span>
         <h2>Sem empresas disponíveis</h2>
         <p>A sua conta ainda não possui uma associação ou vínculo vigente.</p>
       </div>

@@ -1,4 +1,4 @@
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 
 
@@ -8,8 +8,10 @@ class HomeViewTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Forma Flow")
-        self.assertContains(response, "Candidaturas e formação num só fluxo")
-        self.assertContains(response, "IMP-09 — Robustez e entrega")
+        self.assertContains(response, "Candidaturas e formação <em>num só fluxo</em>", html=True)
+        self.assertContains(response, "Começar agora")
+        self.assertContains(response, "Exemplo de percurso")
+        self.assertNotContains(response, "IMP-09")
 
     def test_home_applies_browser_security_headers(self):
         response = self.client.get(reverse("core:home"))
@@ -41,6 +43,13 @@ class HealthViewTests(SimpleTestCase):
 
 
 class ErrorViewTests(SimpleTestCase):
+    @override_settings(ALLOWED_HOSTS=["testserver"], DEBUG=False)
+    def test_invalid_host_renders_error_before_authentication_middleware(self):
+        response = self.client.get("/", HTTP_HOST="invalid.example")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "Não foi possível concluir este pedido", status_code=400)
+
     def test_not_found_page_does_not_repeat_the_requested_path(self):
         secret_path = "/recurso-inexistente/identificador-confidencial/"
 

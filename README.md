@@ -109,6 +109,7 @@ O workflow do GitHub repete estas verificações com PostgreSQL 17, ensaia o bac
 - [Plano de demonstração](docs/operacao/plano-demonstracao.md)
 - [Revisão de segurança](docs/operacao/revisao-seguranca.md)
 - [Relatório de validação](docs/operacao/relatorio-validacao.md)
+- [Revisão da interface](docs/operacao/revisao-interface.md)
 
 ## Endpoints disponíveis
 

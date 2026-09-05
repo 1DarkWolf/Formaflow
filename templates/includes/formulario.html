@@ -8,10 +8,18 @@
 {% for hidden_field in form.hidden_fields %}{{ hidden_field }}{% endfor %}
 
 {% for field in form.visible_fields %}
-  <div class="form-field{% if field.errors %} form-field-invalid{% endif %}">
-    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-    {{ field }}
-    {% if field.help_text %}<div class="field-help">{{ field.help_text|safe }}</div>{% endif %}
+  {% if field.use_fieldset %}<fieldset class="form-field choice-field{% if field.errors %} form-field-invalid{% endif %}">{% else %}<div class="form-field{% if field.errors %} form-field-invalid{% endif %}{% if field.field.widget.input_type == 'checkbox' %} checkbox-field{% endif %}">{% endif %}
+    {% if field.use_fieldset %}
+      <legend>{{ field.label }}{% if field.field.required %} <span class="field-required" aria-hidden="true">*</span>{% endif %}</legend>{{ field }}
+    {% elif field.field.widget.input_type == 'checkbox' %}
+      {{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% else %}
+      <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="field-required" aria-hidden="true">*</span>{% endif %}</label>
+      {% if field.field.widget.input_type == 'password' %}
+        <div class="password-input">{{ field }}<button class="password-toggle" type="button" data-password-toggle aria-controls="{{ field.id_for_label }}" aria-pressed="false" hidden>Mostrar</button></div>
+      {% else %}{{ field }}{% endif %}
+    {% endif %}
+    {% if field.help_text %}<div class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</div>{% endif %}
     {% if field.errors %}<div class="field-errors" role="alert">{{ field.errors }}</div>{% endif %}
-  </div>
+  {% if field.use_fieldset %}</fieldset>{% else %}</div>{% endif %}
 {% endfor %}

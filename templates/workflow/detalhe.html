@@ -3,10 +3,6 @@
 {% block title %}Acompanhamento da candidatura — Forma Flow{% endblock %}
 
 {% block content %}
-  <div class="notice-inline">
-    Consulte estimativas, valores oficiais e pagamentos na
-    <a class="text-link" href="{% url 'financeiro:detalhe' candidatura.public_id %}">área financeira</a>.
-  </div>
   <nav class="breadcrumb" aria-label="Navegação estrutural">
     <a href="{% url 'candidaturas:detalhe' candidatura.public_id %}">Candidatura</a>
     <span aria-hidden="true">/</span>
@@ -19,8 +15,9 @@
       <h1 class="page-title">Acompanhamento da candidatura</h1>
       <p class="section-copy">O Forma Flow regista os acontecimentos ocorridos no portal externo; não decide em nome do IEFP.</p>
     </div>
-    <a class="button button-secondary" href="{% url 'documentos:checklist' candidatura.public_id %}">Documentos</a>
   </header>
+
+  {% include "includes/process_nav.html" with section="workflow" %}
 
   <section class="workflow-overview" aria-label="Próxima ação e resultado">
     <article class="workflow-focus-card">

@@ -1,0 +1,6 @@
+<nav class="process-nav" aria-label="Secções da candidatura">
+  <a href="{% url 'candidaturas:detalhe' candidatura.public_id %}"{% if section == 'resumo' %} aria-current="page"{% endif %}>{% include "includes/icon.html" with name="folder" %} Resumo</a>
+  <a href="{% url 'documentos:checklist' candidatura.public_id %}"{% if section == 'documentos' %} aria-current="page"{% endif %}>{% include "includes/icon.html" with name="document" %} Documentos</a>
+  <a href="{% url 'workflow:detalhe' candidatura.public_id %}"{% if section == 'workflow' %} aria-current="page"{% endif %}>{% include "includes/icon.html" with name="clock" %} Acompanhamento</a>
+  <a href="{% url 'financeiro:detalhe' candidatura.public_id %}"{% if section == 'financeiro' %} aria-current="page"{% endif %}>{% include "includes/icon.html" with name="wallet" %} Financeiro</a>
+</nav>

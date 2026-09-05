@@ -76,15 +76,19 @@ def detalhe_financeiro(request, public_id):
             "restituicoes": refunds,
             "pode_gerir": can_manage,
             "pode_calcular": utilizador_pode_operar_candidatura(request.user, candidature),
-            "form_calculo": FormularioCalculo(candidatura=candidature),
+            "form_calculo": FormularioCalculo(candidatura=candidature, auto_id="id_calculo_%s"),
             "form_confirmacao": FormularioConfirmacaoOficial(
-                candidatura=candidature, apoios=supports
+                candidatura=candidature, apoios=supports, auto_id="id_confirmacao_%s"
             ),
-            "form_movimento": FormularioMovimento(candidatura=candidature, apoios=supports),
-            "form_risco": FormularioRisco(candidatura=candidature),
-            "form_restituicao": FormularioRestituicao(candidatura=candidature),
+            "form_movimento": FormularioMovimento(
+                candidatura=candidature, apoios=supports, auto_id="id_movimento_%s"
+            ),
+            "form_risco": FormularioRisco(candidatura=candidature, auto_id="id_risco_%s"),
+            "form_restituicao": FormularioRestituicao(
+                candidatura=candidature, auto_id="id_restituicao_%s"
+            ),
             "form_regularizacao_restituicao": FormularioRegularizacaoRestituicao(
-                candidatura=candidature, restituicoes=refunds
+                candidatura=candidature, restituicoes=refunds, auto_id="id_regularizacao_%s"
             ),
         },
     )

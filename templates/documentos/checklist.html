@@ -15,7 +15,7 @@
     <div>
       <p class="eyebrow">{{ candidatura.get_estado_atual_display }}</p>
       <h1 class="page-title">Checklist documental</h1>
-      <p class="hero-copy">{{ candidatura }} · {{ validos }} de {{ total }} requisito{{ total|pluralize }} resolvido{{ total|pluralize }}</p>
+      <p class="section-copy">{{ candidatura }}</p>
     </div>
     {% if pode_editar %}
       <form method="post" action="{% url 'documentos:gerar_checklist' candidatura.public_id %}">
@@ -25,13 +25,21 @@
     {% endif %}
   </header>
 
+  {% include "includes/process_nav.html" with section="documentos" %}
+  {% if total %}
+    <div class="document-progress">
+      <span id="progresso-documental"><strong>{{ validos }} de {{ total }}</strong> requisito{{ total|pluralize }} resolvido{{ total|pluralize }}</span>
+      <progress value="{{ validos }}" max="{{ total }}" aria-labelledby="progresso-documental">{{ validos }} de {{ total }}</progress>
+    </div>
+  {% endif %}
+
   <div class="document-list">
     {% for requisito in requisitos %}
       <article class="document-card state-{{ requisito.estado|lower }}">
         <div class="document-card-heading">
           <div>
             <div class="document-status-row">
-              <span class="status-label">{{ requisito.get_estado_display }}</span>
+              <span class="status-label" data-state="{{ requisito.estado }}">{{ requisito.get_estado_display }}</span>
               {% if requisito.bloqueante %}<span class="blocking-label">Bloqueante</span>{% endif %}
             </div>
             <h2>{{ requisito.tipo_documento.designacao }}</h2>
